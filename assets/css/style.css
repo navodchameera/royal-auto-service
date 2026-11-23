@@ -1,0 +1,101 @@
+/* Royal Auto Service – login / register styling */
+:root{
+  --ink:#0B1B2B; --teal:#0A7C91; --teal-dark:#07596A; --aqua:#6FD0E0;
+  --ground:#E8F0F4; --field:#F3F7FA; --line:#E1EAF0; --muted:#475B6C; --danger:#B3261E;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,sans-serif;color:var(--ink);background:var(--ground);font-size:15px}
+a{color:var(--teal);font-weight:600}
+
+/* Page layout: two floating rounded panels */
+.pg{padding:20px;display:grid;grid-template-columns:1.1fr 1fr;gap:20px;min-height:100vh}
+
+/* Left panel */
+.hero{background:var(--ink);color:#fff;border-radius:28px;padding:36px 44px 32px;display:flex;flex-direction:column;gap:20px;overflow:hidden}
+.logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px}
+.logo span,.hero h2 span{color:var(--aqua)}
+.hero h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:56px;line-height:1;letter-spacing:-.035em;margin:12px 0 14px}
+.hero p{margin:0;font-size:17px;line-height:1.5;color:#C3D2DD;max-width:460px}
+.fig{width:100%;max-width:560px;margin:auto}
+.fig img{display:block;width:100%;height:auto}
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pills span{border:1.5px solid #1D3A52;border-radius:999px;padding:9px 16px;font-size:14px;color:#E6EEF3}
+
+/* Right panel */
+.form{background:#fff;border-radius:28px;padding:40px 48px 28px;display:flex;flex-direction:column;justify-content:flex-start;box-shadow:0 10px 40px rgba(11,27,43,.06)}
+.in-w{width:100%;max-width:420px;margin:0 auto}
+/* Sliding tabs (pill glides between Log in and Register) */
+:root{--tab-track-top:#FFFFFF;--tab-track-bottom:#E3ECF1;--tab-border:#DCE6EC;--tab-pill:#0B1B2B;--tab-text:#2B3C4C;--tab-text-hover:#5B6E7E;--tab-text-active:#FFFFFF}
+.tabs{position:relative;display:flex;gap:4px;padding:5px;margin-bottom:24px;border-radius:999px;border:1px solid var(--tab-border);background:linear-gradient(to bottom,var(--tab-track-top),var(--tab-track-bottom));box-shadow:inset 0 -2px 4px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.9),0 4px 12px rgba(0,0,0,.03)}
+.tab{position:relative;z-index:1;flex:1 1 0;min-width:0;text-align:center;padding:12px;min-height:46px;border-radius:999px;text-decoration:none;font-weight:600;font-size:15px;color:var(--tab-text);transition:color .2s}
+.tab:hover{color:var(--tab-text-hover)}
+.tab.on,.tab.on:hover{color:var(--tab-text-active)}
+.tab:focus-visible{outline:3px solid var(--aqua);outline-offset:2px}
+.tab-pill{position:absolute;z-index:0;top:5px;bottom:5px;left:0;width:0;border-radius:999px;background:var(--tab-pill);box-shadow:0 1px 2px rgba(0,0,0,.08);opacity:0;will-change:transform;transition:transform .5s cubic-bezier(.3,1.25,.5,1),width .5s cubic-bezier(.3,1.25,.5,1)}
+.tabs:not(.js) .tab.on{background:var(--tab-pill)}
+@media(prefers-reduced-motion:reduce){.tab-pill{transition:none}}
+h1{font-family:'Space Grotesk',sans-serif;font-size:30px;line-height:1.05;letter-spacing:-.03em;margin:0 0 8px}
+.sub{margin:0 0 20px;line-height:1.5;color:var(--muted)}
+
+/* Form controls */
+label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+.in{display:block;width:100%;min-height:48px;padding:12px 16px;border:2px solid var(--line);background:var(--field);border-radius:14px;font:16px Inter,sans-serif;color:var(--ink);margin-bottom:14px}
+.in:focus{outline:3px solid var(--aqua);border-color:var(--teal);background:#fff}
+.in[aria-invalid="true"]{border-color:var(--danger)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hint{font-size:13px;margin:-4px 0 14px;color:var(--muted)}
+.err{color:var(--danger);font-size:13px;margin:-10px 0 14px}
+.err:empty{display:none}
+.pw{position:relative}
+.pw .in{padding-right:64px}
+.pw button{position:absolute;right:6px;top:2px;min-height:44px;padding:0 12px;border:0;background:none;color:var(--teal);font:600 14px Inter,sans-serif;cursor:pointer;border-radius:10px}
+.ck{display:flex;align-items:center;gap:10px;margin:0 0 12px;flex-wrap:wrap}
+.ck input{width:22px;height:22px;accent-color:var(--teal)}
+.ck label{margin:0;font-weight:400}
+.lk{background:none;border:0;padding:0;margin-left:-6px;font:inherit;font-weight:600;color:var(--teal);text-decoration:underline;cursor:pointer;min-height:44px}
+.btn{width:100%;min-height:54px;border:0;border-radius:14px;background:var(--teal);color:#fff;font:600 16px Inter,sans-serif;cursor:pointer}
+.btn:hover{background:var(--teal-dark)}
+.btn:disabled{background:#D5E0E8;color:var(--muted);cursor:not-allowed}
+.btn:focus-visible,.lk:focus-visible,.x:focus-visible,.pw button:focus-visible{outline:3px solid var(--aqua);outline-offset:2px}
+.foot{margin:16px 0 0;text-align:center;color:var(--muted)}
+.alert{padding:12px 16px;border-radius:12px;margin-bottom:18px;background:#FDECEC;color:#8A1C1C;line-height:1.4}
+.alert.ok{background:#E3F4EC;color:#14532D}
+
+/* Terms dialog (native <dialog>) */
+.dlg{border:0;border-radius:24px;padding:0;width:min(660px,92vw);max-height:80vh;box-shadow:0 24px 80px rgba(11,27,43,.3);color:var(--ink)}
+.dlg[open]{display:flex;flex-direction:column}
+.dlg::backdrop{background:rgba(11,27,43,.6);backdrop-filter:blur(4px)}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:22px 28px}
+.dh h2{font-family:'Space Grotesk',sans-serif;font-size:26px;letter-spacing:-.02em;margin:0}
+.x{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:#EAF1F5;color:var(--ink);font:600 14px Inter,sans-serif;cursor:pointer}
+.x:hover{background:#DCE7EE}
+.db{overflow:auto;padding:0 28px 12px}
+.db h3{font-size:15px;margin:18px 0 4px}
+.db p{margin:0;line-height:1.55;color:#33475A}
+.df{padding:18px 28px;background:var(--field)}
+
+/* Home placeholder */
+body.home{display:grid;place-items:center;min-height:100vh}
+body.home .card{background:#fff;border-radius:28px;padding:40px;max-width:460px;width:100%}
+
+@media(max-height:800px){
+  .pg{padding:12px;gap:12px}
+  .form{padding:24px 40px 20px}
+  .tabs{margin-bottom:16px}
+  .sub{display:none}
+  h1{font-size:26px;margin-bottom:14px}
+  label{margin-bottom:4px}
+  .in{min-height:44px;margin-bottom:10px}
+  .pw button{top:0}
+  .hint{margin-bottom:10px}
+  .btn{min-height:48px}
+  .foot{margin-top:12px}
+}
+@media(max-width:860px){
+  .pg{grid-template-columns:1fr;padding:12px}
+  .hero{padding:26px 22px}
+  .hero h2{font-size:38px}
+  .pills{display:none}
+  .form{padding:28px 20px}
+  .two{grid-template-columns:1fr}
+}

@@ -1,0 +1,110 @@
+// Client-side validation, password toggle and terms dialog.
+// (The PHP controller validates again on the server.)
+(function () {
+  'use strict';
+
+  var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var phoneRe = /^\+?\d{9,15}$/;
+  var passRe  = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
+  // Each rule returns true when valid, or an error message string.
+  var rules = {
+    full_name: function (v) { return v.trim().length >= 2 || 'Enter your full name.'; },
+    email:     function (v) { return emailRe.test(v.trim()) || 'Enter a valid email address.'; },
+    phone:     function (v) { return phoneRe.test(v.replace(/[\s-]/g, '')) || 'Enter a valid phone number.'; },
+    password:  function (v, f) {
+      if (f.dataset.mode === 'login') { return v.length > 0 || 'Enter your password.'; }
+      return passRe.test(v) || 'Use at least 8 characters with a letter and a number.';
+    },
+    login:     function (v) { return v.trim().length > 0 || 'Enter your username or email.'; },
+    username:  function (v) { return /^[A-Za-z0-9_.]{3,30}$/.test(v) || 'Use 3 to 30 letters, numbers, dots or underscores.'; },
+    current_password: function (v) { return v.length > 0 || 'Enter your current password.'; },
+    new_password: function (v) { return passRe.test(v) || 'Use at least 8 characters with a letter and a number.'; },
+    confirm_password: function (v, f) { return v === f.querySelector('#password, #new_password').value || 'Passwords do not match.'; },
+    address:   function (v) {
+      v = v.trim();
+      if (v.length === 0) { return 'Enter your address.'; }
+      return v.length <= 255 || 'Address is too long.';
+    }
+  };
+
+  function showError(input, message) {
+    var out = document.getElementById(input.id + '-err');
+    input.setAttribute('aria-invalid', message ? 'true' : 'false');
+    if (out) { out.textContent = message || ''; }
+  }
+
+  function check(input, mode) {
+    var rule = rules[input.name];
+    if (!rule) { return true; }
+    var result = rule(input.value, input.form);
+    showError(input, result === true ? '' : result);
+    return result === true;
+  }
+
+  document.querySelectorAll('form[data-validate]').forEach(function (form) {
+    var mode   = form.dataset.mode;
+    var fields = Array.prototype.slice.call(form.querySelectorAll('.in'));
+
+    fields.forEach(function (input) {
+      input.addEventListener('blur', function () { check(input, mode); });
+      input.addEventListener('input', function () {
+        if (input.getAttribute('aria-invalid') === 'true') { check(input, mode); }
+      });
+    });
+
+    // Re-check "confirm password" when the password changes
+    var pw = form.querySelector('#password, #new_password'), cf = form.querySelector('#confirm_password');
+    if (pw && cf) {
+      pw.addEventListener('input', function () { if (cf.value !== '') { check(cf, mode); } });
+    }
+
+    form.addEventListener('submit', function (event) {
+      var firstBad = null;
+      fields.forEach(function (input) {
+        if (!check(input, mode) && !firstBad) { firstBad = input; }
+      });
+      if (firstBad) {
+        event.preventDefault();
+        firstBad.focus();
+      }
+    });
+
+    // Register page only: terms checkbox and dialog
+    var terms  = form.querySelector('#terms');
+    var submit = form.querySelector('#registerBtn');
+    var dialog = document.getElementById('termsDialog');
+    if (!terms || !submit) { return; }
+
+    function syncSubmit() { submit.disabled = !terms.checked; }
+    terms.addEventListener('change', syncSubmit);
+    syncSubmit();
+
+    if (!dialog) { return; }
+    var opener = document.querySelector('[data-open-terms]');
+    if (opener) { opener.addEventListener('click', function () { dialog.showModal(); }); }
+
+    dialog.querySelectorAll('[data-close-terms]').forEach(function (btn) {
+      btn.addEventListener('click', function () { dialog.close(); });
+    });
+    dialog.querySelector('[data-agree]').addEventListener('click', function () {
+      terms.checked = true;
+      syncSubmit();
+      dialog.close();
+    });
+    // Click on the dark backdrop closes the dialog
+    dialog.addEventListener('click', function (event) {
+      if (event.target === dialog) { dialog.close(); }
+    });
+  });
+
+  // Show / Hide password
+  document.querySelectorAll('[data-toggle-pw]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var input = document.getElementById(btn.getAttribute('aria-controls'));
+      var show  = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.textContent = show ? 'Hide' : 'Show';
+    });
+  });
+})();

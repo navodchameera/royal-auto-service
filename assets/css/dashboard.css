@@ -1,0 +1,57 @@
+/* Royal Auto Service – signed-in pages (customer home) */
+*{box-sizing:border-box}
+body{margin:0}
+.app{display:grid;grid-template-columns:248px 1fr;gap:16px;padding:16px;min-height:100vh;background:#E8F0F4;font:14px/1.45 Inter,sans-serif;color:#0B1B2B}
+.side{background:#0B1B2B;color:#fff;border-radius:24px;padding:26px 14px 16px;display:flex;flex-direction:column;gap:4px}
+.logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;padding:0 14px 22px}
+.logo span{color:#6FD0E0}
+.nav{display:block;padding:12px 14px;border-radius:12px;color:#B9C7D3;font-weight:500;text-decoration:none}
+.nav:hover{color:#fff}
+.nav.on{background:#16344D;color:#fff}
+.who{margin-top:auto;display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:#10283D;color:#fff}
+.who small{display:block;color:#B9C7D3}
+.out{color:#6FD0E0;font-weight:600}
+.av{width:36px;height:36px;border-radius:50%;background:#6FD0E0;color:#0B1B2B;display:grid;place-items:center;font-weight:700;flex:none}
+.main{display:flex;flex-direction:column;gap:16px;min-width:0;padding:8px 8px 8px 4px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+h1{font-family:'Space Grotesk',sans-serif;font-size:32px;line-height:1.05;letter-spacing:-.03em;margin:0 0 6px}
+.sub,.m{color:#475B6C}
+h2{font-size:15px;font-weight:600;margin:0 0 14px}
+.card{background:#fff;border-radius:22px;padding:22px}
+.dk{background:#0B1B2B;color:#fff}
+.dk .m{color:#B9C7D3}
+.when{font-family:'Space Grotesk',sans-serif;font-size:36px;line-height:1.05;letter-spacing:-.03em;font-weight:700;margin:18px 0 6px}
+.big-m{font-size:16px}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 24px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border:0;border-radius:12px;background:#0A7C91;color:#fff;font:600 14px Inter,sans-serif;cursor:pointer;text-decoration:none}
+.btn:hover{background:#07596A}
+.btn.g{background:#EAF1F5;color:#0B1B2B}
+.btn.g:hover{background:#DCE7EE}
+.btn.a{background:#6FD0E0;color:#0B1B2B}
+.btn.a:hover{background:#8FDCE9}
+.btn:focus-visible,.nav:focus-visible,.out:focus-visible{outline:3px solid #6FD0E0;outline-offset:2px}
+.pill{display:inline-block;padding:4px 11px;border-radius:999px;background:#DCEFF3;color:#07596A;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.ink{background:#0B1B2B;color:#fff}
+.dk .pill{background:#16344D;color:#6FD0E0}
+.row{display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid #EEF3F6}
+.lst>.row:first-child{border-top:0;padding-top:0}
+.g1{flex:1;min-width:0}
+.row b{display:block}
+.row .price{display:inline;white-space:nowrap}
+.g2{display:grid;gap:16px}
+.empty{margin:0;color:#475B6C}
+@media(max-width:860px){.app{grid-template-columns:1fr}.g2{grid-template-columns:1fr!important}}
+
+/* Forms (settings) */
+label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
+.in{display:block;width:100%;min-height:48px;padding:12px 14px;border:2px solid #E1EAF0;background:#F3F7FA;border-radius:14px;font:15px Inter,sans-serif;color:#0B1B2B;margin-bottom:12px}
+.in:focus{outline:3px solid #6FD0E0;border-color:#0A7C91;background:#fff}
+.in[aria-invalid="true"]{border-color:#B3261E}
+.err{color:#B3261E;font-size:13px;margin:-6px 0 12px}
+.err:empty{display:none}
+.hint{font-size:13px;color:#475B6C;margin:-6px 0 12px}
+.pw{position:relative}
+.pw .in{padding-right:64px}
+.pw button{position:absolute;right:6px;top:2px;min-height:44px;padding:0 12px;border:0;background:none;color:#0A7C91;font:600 14px Inter,sans-serif;cursor:pointer;border-radius:10px}
+.alert{padding:12px 16px;border-radius:12px;background:#FDECEC;color:#8A1C1C;line-height:1.4}
+.alert.ok{background:#E3F4EC;color:#14532D}
