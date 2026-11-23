@@ -7,7 +7,7 @@ $navByRole = [
         'home'     => ['Home',           BASE_URL . '/index.php?url=home'],
         'book'     => ['Book a service', BASE_URL . '/index.php?url=book'],
         'bookings' => ['My bookings',    '#'],
-        'vehicles' => ['My vehicles',    '#'],
+        'vehicles' => ['My vehicles',    BASE_URL . '/index.php?url=vehicles'],
         'payments' => ['Payments',       '#'],
         'reviews'  => ['Reviews',        '#'],
         'settings' => $settings,

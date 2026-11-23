@@ -2,7 +2,7 @@
 *{box-sizing:border-box}
 body{margin:0}
 .app{display:grid;grid-template-columns:248px 1fr;gap:16px;padding:16px;min-height:100vh;background:#E8F0F4;font:14px/1.45 Inter,sans-serif;color:#0B1B2B}
-.side{background:#0B1B2B;color:#fff;border-radius:24px;padding:26px 14px 16px;display:flex;flex-direction:column;gap:4px}
+.side{background:#0B1B2B;color:#fff;border-radius:24px;padding:26px 14px 16px;display:flex;flex-direction:column;gap:4px;position:sticky;top:16px;align-self:start;height:calc(100vh - 32px);height:calc(100dvh - 32px);overflow-y:auto}
 .logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;padding:0 14px 22px}
 .logo span{color:#6FD0E0}
 .nav{display:block;padding:12px 14px;border-radius:12px;color:#B9C7D3;font-weight:500;text-decoration:none}
@@ -40,7 +40,7 @@ h2{font-size:15px;font-weight:600;margin:0 0 14px}
 .row .price{display:inline;white-space:nowrap}
 .g2{display:grid;gap:16px}
 .empty{margin:0;color:#475B6C}
-@media(max-width:860px){.app{grid-template-columns:1fr}.g2{grid-template-columns:1fr!important}}
+@media(max-width:860px){.app{grid-template-columns:1fr}.side{position:static;height:auto;overflow:visible}.g2{grid-template-columns:1fr!important}}
 
 /* Forms (settings) */
 label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
@@ -80,3 +80,11 @@ select.in{appearance:auto}
 .sticky{position:sticky;top:16px}
 [hidden]{display:none!important}
 @media(max-width:860px){.opts3,.opts2,.two{grid-template-columns:1fr}.slots{grid-template-columns:1fr 1fr}.sticky{position:static}}
+
+/* My vehicles */
+.vc{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.vc .pill{margin-right:6px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts form{margin:0}
+.btn.danger{background:#FDECEC;color:#8A1C1C}
+.btn.danger:hover{background:#F9D9D9}

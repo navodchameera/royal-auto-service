@@ -68,7 +68,7 @@ require APP_PATH . '/views/layout/app_header.php';
     <?php else: ?>
       <p class="empty">No vehicles yet. Add one to start booking.</p>
     <?php endif; ?>
-    <a class="btn g" href="<?= BASE_URL ?>/index.php?url=book&amp;vehicle=new" style="margin-top:16px">Add a vehicle</a>
+    <a class="btn g" href="<?= BASE_URL ?>/index.php?url=vehicles" style="margin-top:16px">Add a vehicle</a>
   </section>
 
   <section class="card">
