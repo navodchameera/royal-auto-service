@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Colombo');
 defined('APP_PATH') or exit;
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'royal_auto');

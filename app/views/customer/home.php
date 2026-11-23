@@ -5,12 +5,13 @@ $navActive = 'home';
 $first     = explode(' ', trim($user['name']))[0];
 require APP_PATH . '/views/layout/app_header.php';
 ?>
+<?php if (!empty($flash)): ?><div class="alert ok" role="status"><?= e($flash) ?></div><?php endif; ?>
 <div class="top">
   <div>
     <h1>Hello, <?= e($first) ?></h1>
     <div class="sub"><?= e(date('l j F')) ?> · here is what is happening with your vehicles.</div>
   </div>
-  <a class="btn" href="#">Book a service</a>
+  <a class="btn" href="<?= BASE_URL ?>/index.php?url=book">Book a service</a>
 </div>
 
 <div class="g2" style="grid-template-columns:1.35fr 1fr">
@@ -31,7 +32,7 @@ require APP_PATH . '/views/layout/app_header.php';
     <span class="pill">Next appointment</span>
     <div class="when">Nothing booked yet</div>
     <div class="m big-m">Book a wash or detailing and it will show up here.</div>
-    <a class="btn a" href="#" style="margin-top:24px">Book a service</a>
+    <a class="btn a" href="<?= BASE_URL ?>/index.php?url=book" style="margin-top:24px">Book a service</a>
   </section>
   <?php endif; ?>
 
@@ -60,14 +61,14 @@ require APP_PATH . '/views/layout/app_header.php';
         <?php foreach ($vehicles as $v): ?>
           <div class="row">
             <div class="g1"><b><?= e($v['make_model']) ?></b><span class="m"><?= e($v['plate_no']) ?></span></div>
-            <a class="btn g" href="#">Book</a>
+            <a class="btn g" href="<?= BASE_URL ?>/index.php?url=book&amp;vehicle=<?= (int)$v['vehicle_id'] ?>">Book</a>
           </div>
         <?php endforeach; ?>
       </div>
     <?php else: ?>
       <p class="empty">No vehicles yet. Add one to start booking.</p>
     <?php endif; ?>
-    <a class="btn g" href="#" style="margin-top:16px">Add a vehicle</a>
+    <a class="btn g" href="<?= BASE_URL ?>/index.php?url=book&amp;vehicle=new" style="margin-top:16px">Add a vehicle</a>
   </section>
 
   <section class="card">

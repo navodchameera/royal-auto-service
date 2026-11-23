@@ -92,4 +92,17 @@ class Booking
         $stmt->execute(['u' => $userId]);
         return $stmt->fetchAll();
     }
+    public function create(array $d): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO bookings (user_id, vehicle_id, package_id, location_type, job_address, appointment_date, appointment_time)
+             VALUES (:u, :v, :p, :l, :a, :d, :t)'
+        );
+        $stmt->execute([
+            'u' => $d['user_id'], 'v' => $d['vehicle_id'], 'p' => $d['package_id'],
+            'l' => $d['location_type'], 'a' => $d['job_address'],
+            'd' => $d['appointment_date'], 't' => $d['appointment_time'] . ':00',
+        ]);
+        return (int)$this->db->lastInsertId();
+    }
 }

@@ -55,3 +55,28 @@ label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
 .pw button{position:absolute;right:6px;top:2px;min-height:44px;padding:0 12px;border:0;background:none;color:#0A7C91;font:600 14px Inter,sans-serif;cursor:pointer;border-radius:10px}
 .alert{padding:12px 16px;border-radius:12px;background:#FDECEC;color:#8A1C1C;line-height:1.4}
 .alert.ok{background:#E3F4EC;color:#14532D}
+
+/* Book a service */
+select.in{appearance:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fs{border:0;padding:0;margin:0 0 14px;min-width:0}
+.fs legend{font-weight:600;font-size:13px;padding:0;margin:0 0 8px}
+.opts3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.opts2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{display:flex;flex-direction:column;gap:2px;border:2px solid #E1EAF0;border-radius:16px;padding:14px 16px;background:#fff;cursor:pointer;font-weight:400}
+.opt input{margin:0 0 6px;width:18px;height:18px;accent-color:#0A7C91}
+.opt b{font-size:15px}
+.opt:has(input:checked){border-color:#0A7C91;background:#F0F8FA}
+.opt:focus-within{outline:3px solid #6FD0E0;outline-offset:2px}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.slot{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;border:2px dashed #9FB8C8;border-radius:14px;background:#fff;color:#0A7C91;font-weight:600;cursor:pointer;overflow:hidden;margin:0}
+.slot input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.slot .cap{position:relative;padding:4px 10px;border-radius:999px}
+.slot.has{border-style:solid;border-color:#0A7C91}
+.slot.has .cap{position:absolute;left:8px;bottom:8px;background:#0B1B2B;color:#fff;font-size:12px}
+.slot.bad{border-color:#B3261E}
+.slot:focus-within{outline:3px solid #6FD0E0;outline-offset:2px}
+.sticky{position:sticky;top:16px}
+[hidden]{display:none!important}
+@media(max-width:860px){.opts3,.opts2,.two{grid-template-columns:1fr}.slots{grid-template-columns:1fr 1fr}.sticky{position:static}}

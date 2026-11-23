@@ -19,7 +19,11 @@ class HomeController extends Controller
         $bookings = new Booking();
         $vehicles = new Vehicle();
 
+        $flash = $_SESSION['flash'] ?? '';
+        unset($_SESSION['flash']);
+
         $this->view('customer/home', [
+            'flash'     => $flash,
             'user'      => $user,
             'next'      => $bookings->nextAppointment($id),
             'attention' => $bookings->attention($id),

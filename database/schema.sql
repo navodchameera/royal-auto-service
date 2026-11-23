@@ -89,3 +89,13 @@ CREATE TABLE IF NOT EXISTS reviews (
   FOREIGN KEY (booking_id) REFERENCES bookings(booking_id),
   FOREIGN KEY (user_id)    REFERENCES users(user_id)
 );
+
+-- ============ Added for Book a service ============
+CREATE TABLE IF NOT EXISTS photos (
+  photo_id    INT AUTO_INCREMENT PRIMARY KEY,
+  booking_id  INT NOT NULL,
+  file_path   VARCHAR(255) NOT NULL,   -- file name inside /uploads/booking_photos
+  photo_area  VARCHAR(30) NULL,        -- front, rear, left, interior_front, rear_seats, boot
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)
+);

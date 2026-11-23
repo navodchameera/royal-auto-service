@@ -5,7 +5,7 @@ $settings = ['Settings', BASE_URL . '/index.php?url=settings'];
 $navByRole = [
     'customer' => [
         'home'     => ['Home',           BASE_URL . '/index.php?url=home'],
-        'book'     => ['Book a service', '#'],
+        'book'     => ['Book a service', BASE_URL . '/index.php?url=book'],
         'bookings' => ['My bookings',    '#'],
         'vehicles' => ['My vehicles',    '#'],
         'payments' => ['Payments',       '#'],

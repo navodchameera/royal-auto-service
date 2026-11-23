@@ -6,8 +6,8 @@ session_start();
 define('APP_PATH', __DIR__ . '/app');
 require APP_PATH . '/config/config.php';
 
-foreach (['core/Database', 'core/Controller', 'models/User', 'models/Vehicle', 'models/Booking',
-          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController'] as $file) {
+foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Package', 'models/Photo',
+          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController'] as $file) {
     require APP_PATH . '/' . $file . '.php';
 }
 
@@ -20,6 +20,7 @@ $routes = [
     'logout'   => ['AuthController', 'logout'],
     'home'     => ['HomeController', 'index'],
     'settings' => ['AccountController', 'settings'],
+    'book'     => ['BookingController', 'create'],
 ];
 
 if (!isset($routes[$url])) {
