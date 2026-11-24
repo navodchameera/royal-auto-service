@@ -14,6 +14,14 @@ class Controller
         exit;
     }
 
+    // Only let a signed-in user with this role continue; returns the session user
+    protected function requireRole(string $role): array
+    {
+        if (!isset($_SESSION['user'])) { $this->redirect('login'); }
+        if ($_SESSION['user']['role'] !== $role) { $this->redirect('home'); }
+        return $_SESSION['user'];
+    }
+
     protected function csrfToken(): string
     {
         if (empty($_SESSION['csrf'])) {

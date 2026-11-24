@@ -15,10 +15,11 @@ $navByRole = [
     ],
     'manager' => [
         'home'       => ['Dashboard',  BASE_URL . '/index.php?url=home'],
-        'bookings'   => ['Bookings',   '#'],
-        'quotations' => ['Quotations', '#'],
+        'bookings'   => ['Bookings',   BASE_URL . '/index.php?url=manage-bookings'],
+        'quotations' => ['Quotations', BASE_URL . '/index.php?url=manage-quotations'],
         'jobs'       => ['Jobs',       '#'],
         'cleaners'   => ['Cleaners',   '#'],
+        'customers'  => ['Customers',  BASE_URL . '/index.php?url=manage-customers'],
         'packages'   => ['Packages',   '#'],
         'payments'   => ['Payments',   '#'],
         'reviews'    => ['Reviews',    '#'],
@@ -43,6 +44,7 @@ $icons = [
     'quotations' => '<path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/>',
     'jobs'     => '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 14l2 2 4-4"/>',
     'cleaners' => '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.5a3 3 0 0 1 0 5.5M18 14.5c1.7.8 3 2.5 3 5.5"/>',
+    'customers' => '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>',
     'packages' => '<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
 ];
 $svg = function (string $key, string $class = '') use ($icons) {

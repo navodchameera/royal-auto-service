@@ -6,9 +6,22 @@ session_start();
 define('APP_PATH', __DIR__ . '/app');
 require APP_PATH . '/config/config.php';
 
-foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Package', 'models/Photo',
-          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController'] as $file) {
+foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Package', 'models/Photo',
+          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController'] as $file) {
     require APP_PATH . '/' . $file . '.php';
+}
+
+// A banned (or deleted) account is signed out on its next click
+if (isset($_SESSION['user'])) {
+    $current = (new User())->findById((int)$_SESSION['user']['id']);
+    if (!$current || $current['status'] !== 'active') {
+        $_SESSION = [];
+        session_destroy();
+        session_start();
+        $_SESSION['flash_error'] = 'Your account is blocked or no longer exists. Please contact the manager.';
+        header('Location: ' . BASE_URL . '/index.php?url=login');
+        exit;
+    }
 }
 
 $url = trim($_GET['url'] ?? 'login', '/');
@@ -23,6 +36,9 @@ $routes = [
     'book'     => ['BookingController', 'create'],
     'bookings' => ['BookingController', 'index'],
     'vehicles' => ['VehicleController', 'index'],
+    'manage-bookings'   => ['ManageBookingsController', 'index'],
+    'manage-quotations' => ['ManageQuotationsController', 'index'],
+    'manage-customers'  => ['ManageCustomersController', 'index'],
 ];
 
 if (!isset($routes[$url])) {

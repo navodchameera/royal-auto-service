@@ -44,6 +44,10 @@ class AuthController extends Controller
 
         $flash = $_SESSION['flash'] ?? '';
         unset($_SESSION['flash']);
+        if (!empty($_SESSION['flash_error'])) {
+            $errors['form'] = $_SESSION['flash_error'];
+            unset($_SESSION['flash_error']);
+        }
 
         $this->view('auth/login', [
             'errors' => $errors, 'old' => $old,

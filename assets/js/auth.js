@@ -25,6 +25,7 @@
     make_model: function (v) { v = v.trim(); return (v.length >= 2 && v.length <= 100) || 'Enter the make and model.'; },
     plate_no:  function (v) { return /^[A-Za-z0-9 -]{3,15}$/.test(v.trim()) || 'Enter a valid plate number.'; },
     colour:    function (v) { return v.trim().length <= 30 || 'Colour is too long.'; },
+    quoted_price: function (v) { var n = v.replace(/,/g, '').trim(); return (/^\d{1,7}(\.\d{1,2})?$/.test(n) && parseFloat(n) > 0) || 'Enter a price greater than 0, for example 6500.'; },
     address:   function (v) {
       v = v.trim();
       if (v.length === 0) { return 'Enter your address.'; }
@@ -65,6 +66,12 @@
 
     form.addEventListener('submit', function (event) {
       var firstBad = null;
+      var level = form.querySelectorAll('input[name="condition_level"]');
+      if (level.length && !form.querySelector('input[name="condition_level"]:checked')) {
+        var levelOut = document.getElementById('condition_level-err');
+        if (levelOut) { levelOut.textContent = 'Select the vehicle condition.'; }
+        firstBad = level[0];
+      }
       fields.forEach(function (input) {
         if (!check(input, mode) && !firstBad) { firstBad = input; }
       });

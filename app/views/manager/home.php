@@ -5,9 +5,9 @@ $navActive = 'home';
 require APP_PATH . '/views/layout/app_header.php';
 
 $tiles = [
-    ['New requests to quote',      $counts['requests'],     'Review requests', true],
-    ['Bookings without a cleaner', $counts['need_cleaner'], 'Assign cleaners', false],
-    ['Payments to record',         $counts['payments'],     'Record payments', false],
+    ['New requests to quote',      $counts['requests'],     'Review requests', true,  BASE_URL . '/index.php?url=manage-quotations'],
+    ['Bookings without a cleaner', $counts['need_cleaner'], 'Assign cleaners', false, '#'],
+    ['Payments to record',         $counts['payments'],     'Record payments', false, '#'],
 ];
 ?>
 <div class="top">
@@ -18,11 +18,11 @@ $tiles = [
 </div>
 
 <div class="g2" style="grid-template-columns:repeat(3,1fr)">
-  <?php foreach ($tiles as [$label, $count, $button, $dark]): ?>
+  <?php foreach ($tiles as [$label, $count, $button, $dark, $href]): ?>
     <section class="card<?= $dark ? ' dk' : '' ?>">
       <div class="m"><?= e($label) ?></div>
       <div class="big"><?= (int)$count ?></div>
-      <a class="btn<?= $dark ? ' a' : '' ?>" href="#"><?= e($button) ?></a>
+      <a class="btn<?= $dark ? ' a' : '' ?>" href="<?= e($href) ?>"><?= e($button) ?></a>
     </section>
   <?php endforeach; ?>
 </div>
