@@ -28,8 +28,8 @@ class BookingController extends Controller
         $account  = (new User())->findById($uid);
 
         $old = [
-            'vehicle_id'       => $myCars ? (string)$myCars[0]['vehicle_id'] : 'new',
-            'nv_type'          => 'car',
+            'vehicle_id'       => '',
+            'nv_type'          => '',
             'nv_make_model'    => '',
             'nv_plate'         => '',
             'nv_colour'        => '',
@@ -85,9 +85,11 @@ class BookingController extends Controller
     {
         $e = [];
 
-        if ($in['vehicle_id'] === 'new') {
+        if ($in['vehicle_id'] === '') {
+            $e['vehicle_id'] = 'Select a vehicle.';
+        } elseif ($in['vehicle_id'] === 'new') {
             if (!isset(self::TYPES[$in['nv_type']])) {
-                $e['nv_type'] = 'Choose a vehicle type.';
+                $e['nv_type'] = 'Select a vehicle type.';
             }
             if (mb_strlen($in['nv_make_model']) < 2 || mb_strlen($in['nv_make_model']) > 100) {
                 $e['nv_make_model'] = 'Enter the make and model.';
@@ -101,7 +103,7 @@ class BookingController extends Controller
                 $e['nv_colour'] = 'Colour is too long.';
             }
         } elseif (!ctype_digit($in['vehicle_id']) || !$vm->belongsTo((int)$in['vehicle_id'], $uid)) {
-            $e['vehicle_id'] = 'Choose one of your vehicles.';
+            $e['vehicle_id'] = 'Select one of your vehicles.';
         }
 
         $ids = array_map('strval', array_column($packages, 'package_id'));
@@ -194,5 +196,49 @@ class BookingController extends Controller
             foreach ($saved as $name) { @unlink(PhotoUploader::dir() . $name); }
             return null;
         }
+    }
+    // My bookings: list, filter, accept / reject a quotation, cancel
+    public function index(): void
+    {
+        if (!isset($_SESSION['user'])) { $this->redirect('login'); }
+        $user = $_SESSION['user'];
+        if ($user['role'] !== 'customer') { $this->redirect('home'); }
+
+        $uid     = (int)$user['id'];
+        $filters = ['all' => 'All', 'quoted' => 'Quotation ready', 'active' => 'Active', 'completed' => 'Completed'];
+        $filter  = (string)($_GET['filter'] ?? 'all');
+        if (!isset($filters[$filter])) { $filter = 'all'; }
+
+        $bookings = new Booking();
+        $error    = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id     = (int)($_POST['booking_id'] ?? 0);
+            $action = $_POST['action'] ?? '';
+
+            if (!$this->csrfValid()) {
+                $error = 'Your session expired. Please try again.';
+            } elseif ($action === 'accept' && $bookings->accept($id, $uid)) {
+                $_SESSION['flash'] = 'Quotation accepted. Your booking #' . $id . ' is confirmed.';
+                $this->redirect('bookings&filter=' . $filter);
+            } elseif ($action === 'reject' && $bookings->reject($id, $uid)) {
+                $_SESSION['flash'] = 'Quotation rejected. Booking #' . $id . ' was cancelled.';
+                $this->redirect('bookings&filter=' . $filter);
+            } elseif ($action === 'cancel' && $bookings->cancel($id, $uid)) {
+                $_SESSION['flash'] = 'Booking #' . $id . ' was cancelled.';
+                $this->redirect('bookings&filter=' . $filter);
+            } else {
+                $error = 'That action is no longer available for this booking.';
+            }
+        }
+
+        $flash = $_SESSION['flash'] ?? '';
+        unset($_SESSION['flash']);
+
+        $this->view('customer/bookings', [
+            'user' => $user, 'filters' => $filters, 'filter' => $filter,
+            'bookings' => $bookings->listForUser($uid, $filter),
+            'error' => $error, 'flash' => $flash, 'csrf' => $this->csrfToken(),
+        ]);
     }
 }

@@ -3,6 +3,8 @@ defined('APP_PATH') or exit;
 
 class VehicleController extends Controller
 {
+    private const LOCKED = 'This vehicle is part of an active booking, so it cannot be edited until that booking is completed (or cancelled).';
+
     public function index(): void
     {
         if (!isset($_SESSION['user'])) { $this->redirect('login'); }
@@ -12,53 +14,50 @@ class VehicleController extends Controller
         $uid = (int)$user['id'];
         $vm  = new Vehicle();
 
-        // ?edit=ID opens the form in edit mode
-        $editing = null;
-        $editId  = (string)($_GET['edit'] ?? '');
-        if (ctype_digit($editId)) { $editing = $vm->find((int)$editId, $uid); }
-
-        $errors = [];
-        $old = [
-            'vehicle_type' => $editing['vehicle_type'] ?? 'car',
-            'make_model'   => $editing['make_model'] ?? '',
-            'plate_no'     => $editing['plate_no'] ?? '',
-            'colour'       => (string)($editing['colour'] ?? ''),
-        ];
+        // What the visitor last submitted (so the right form can show its errors)
+        $blank     = ['vehicle_type' => '', 'make_model' => '', 'plate_no' => '', 'colour' => ''];
+        $state     = ['mode' => '', 'id' => 0, 'old' => $blank, 'errors' => []];
+        $formError = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $action = $_POST['action'] ?? '';
             $id     = (int)($_POST['vehicle_id'] ?? 0);
 
             if (!$this->csrfValid()) {
-                $errors['form'] = 'Your session expired. Please try again.';
+                $formError = 'Your session expired. Please try again.';
             } elseif ($action === 'delete') {
                 if (!$vm->find($id, $uid)) {
-                    $errors['form'] = 'Vehicle not found.';
+                    $formError = 'Vehicle not found.';
                 } elseif ($vm->hasBookings($id)) {
-                    $errors['form'] = 'This vehicle has bookings, so it cannot be deleted.';
+                    $formError = 'This vehicle has bookings, so it cannot be deleted.';
                 } else {
                     $vm->delete($id, $uid);
                     $this->done('Vehicle deleted.');
                 }
             } elseif ($action === 'add' || $action === 'update') {
+                $old = $blank;
                 foreach ($old as $key => $_) { $old[$key] = trim((string)($_POST[$key] ?? '')); }
                 $old['plate_no'] = strtoupper($old['plate_no']);
 
-                $editing = null;
                 if ($action === 'update') {
-                    $editing = $vm->find($id, $uid);
-                    if (!$editing) { $errors['form'] = 'Vehicle not found.'; }
+                    if (!$vm->find($id, $uid)) {
+                        $formError = 'Vehicle not found.';
+                    } elseif ($vm->hasActiveBooking($id)) {
+                        $formError = self::LOCKED;
+                    }
                 }
 
-                if (!$errors) { $errors = $this->validate($old, $vm, $editing ? (int)$editing['vehicle_id'] : 0); }
-
-                if (!$errors) {
-                    if ($editing) {
-                        $vm->update((int)$editing['vehicle_id'], $uid, $old);
+                if ($formError === '') {
+                    $errors = $this->validate($old, $vm, $action === 'update' ? $id : 0);
+                    if ($errors) {
+                        $state = ['mode' => $action, 'id' => $id, 'old' => $old, 'errors' => $errors];
+                    } elseif ($action === 'update') {
+                        $vm->update($id, $uid, $old);
                         $this->done('Vehicle updated.');
+                    } else {
+                        $vm->create($uid, $old);
+                        $this->done('Vehicle added.');
                     }
-                    $vm->create($uid, $old);
-                    $this->done('Vehicle added.');
                 }
             }
         }
@@ -68,8 +67,8 @@ class VehicleController extends Controller
 
         $this->view('customer/vehicles', [
             'user' => $user, 'vehicles' => $vm->forUserWithCounts($uid),
-            'types' => BookingController::TYPES, 'editing' => $editing,
-            'old' => $old, 'errors' => $errors, 'flash' => $flash, 'csrf' => $this->csrfToken(),
+            'types' => BookingController::TYPES, 'state' => $state, 'formError' => $formError,
+            'openAdd' => isset($_GET['add']), 'flash' => $flash, 'csrf' => $this->csrfToken(),
         ]);
     }
 
@@ -83,7 +82,7 @@ class VehicleController extends Controller
     {
         $e = [];
         if (!isset(BookingController::TYPES[$in['vehicle_type']])) {
-            $e['vehicle_type'] = 'Choose a vehicle type.';
+            $e['vehicle_type'] = 'Select a vehicle type.';
         }
         if (mb_strlen($in['make_model']) < 2 || mb_strlen($in['make_model']) > 100) {
             $e['make_model'] = 'Enter the make and model.';

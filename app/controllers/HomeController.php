@@ -9,7 +9,19 @@ class HomeController extends Controller
 
         $user = $_SESSION['user'];
 
-        // Manager and cleaner homes are designed but not built yet
+        if ($user['role'] === 'manager') {
+            $dash = new Dashboard();
+            $this->view('manager/home', [
+                'user'     => $user,
+                'counts'   => $dash->counts(),
+                'schedule' => $dash->scheduleToday(),
+                'cleaners' => $dash->cleanersToday(),
+                'reviews'  => $dash->latestReviews(3),
+            ]);
+            return;
+        }
+
+        // The cleaner home is designed but not built yet
         if ($user['role'] !== 'customer') {
             $this->view('home', ['user' => $user]);
             return;

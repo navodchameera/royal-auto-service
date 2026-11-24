@@ -21,6 +21,7 @@
     current_password: function (v) { return v.length > 0 || 'Enter your current password.'; },
     new_password: function (v) { return passRe.test(v) || 'Use at least 8 characters with a letter and a number.'; },
     confirm_password: function (v, f) { return v === f.querySelector('#password, #new_password').value || 'Passwords do not match.'; },
+    vehicle_type: function (v) { return v !== '' || 'Select a vehicle type.'; },
     make_model: function (v) { v = v.trim(); return (v.length >= 2 && v.length <= 100) || 'Enter the make and model.'; },
     plate_no:  function (v) { return /^[A-Za-z0-9 -]{3,15}$/.test(v.trim()) || 'Enter a valid plate number.'; },
     colour:    function (v) { return v.trim().length <= 30 || 'Colour is too long.'; },

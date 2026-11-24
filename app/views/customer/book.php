@@ -30,6 +30,7 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
     <h2>1 · Vehicle and time</h2>
     <label for="vehicle_id">Vehicle</label>
     <select class="in" id="vehicle_id" name="vehicle_id">
+      <option value=""<?= $old['vehicle_id'] === '' ? ' selected' : '' ?>>-- Select vehicle --</option>
       <?php foreach ($vehicles as $v): ?>
         <option value="<?= (int)$v['vehicle_id'] ?>"<?= $old['vehicle_id'] === (string)$v['vehicle_id'] ? ' selected' : '' ?>><?= e($v['make_model'] . ' · ' . $v['plate_no']) ?></option>
       <?php endforeach; ?>
@@ -42,6 +43,7 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
         <div>
           <label for="nv_type">Type</label>
           <select class="in" id="nv_type" name="nv_type">
+            <option value=""<?= $old['nv_type'] === '' ? ' selected' : '' ?>>-- Select type --</option>
             <?php foreach ($types as $k => $label): ?>
               <option value="<?= e($k) ?>"<?= $old['nv_type'] === $k ? ' selected' : '' ?>><?= e($label) ?></option>
             <?php endforeach; ?>

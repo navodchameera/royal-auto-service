@@ -28,8 +28,8 @@
     var loc = checked('location_type');
     addrBox.hidden = !loc || loc.value !== 'customer_site';
 
-    var vehicleText = vehicle.value === 'new'
-      ? (q('#nv_make_model').value.trim() || 'New vehicle')
+    var vehicleText = vehicle.value === '' ? '–'
+      : vehicle.value === 'new' ? (q('#nv_make_model').value.trim() || 'New vehicle')
       : vehicle.options[vehicle.selectedIndex].text;
     var pkg = checked('package_id');
     var d = q('#appointment_date').value, t = q('#appointment_time').value;
@@ -74,7 +74,9 @@
     var m = [];
     var loc = checked('location_type');
 
+    if (vehicle.value === '') { m.push('Select a vehicle.'); }
     if (vehicle.value === 'new') {
+      if (q('#nv_type').value === '') { m.push('Select a vehicle type.'); }
       if (q('#nv_make_model').value.trim().length < 2) { m.push('Enter the make and model.'); }
       if (!/^[A-Za-z0-9 -]{3,15}$/.test(q('#nv_plate').value.trim())) { m.push('Enter a valid plate number.'); }
     }

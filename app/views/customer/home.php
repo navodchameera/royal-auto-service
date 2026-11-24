@@ -25,7 +25,7 @@ require APP_PATH . '/views/layout/app_header.php';
       <span class="pill"><?= e(location_label($next['location_type'])) ?></span>
       <span class="pill"><?= e(status_label($next['status'])) ?></span>
     </div>
-    <a class="btn a" href="#">View booking</a>
+    <a class="btn a" href="<?= BASE_URL ?>/index.php?url=bookings">View booking</a>
   </section>
   <?php else: ?>
   <section class="card dk">
@@ -43,7 +43,7 @@ require APP_PATH . '/views/layout/app_header.php';
         <?php foreach ($attention as $item): ?>
           <div class="row">
             <div class="g1"><b><?= e($item['title']) ?></b><span class="m"><?= e($item['meta']) ?></span></div>
-            <a class="btn g" href="#"><?= e($item['button']) ?></a>
+            <a class="btn g" href="<?= $item['href'] === '#' ? '#' : e(BASE_URL . '/index.php?url=' . $item['href']) ?>"><?= e($item['button']) ?></a>
           </div>
         <?php endforeach; ?>
       </div>
@@ -68,7 +68,7 @@ require APP_PATH . '/views/layout/app_header.php';
     <?php else: ?>
       <p class="empty">No vehicles yet. Add one to start booking.</p>
     <?php endif; ?>
-    <a class="btn g" href="<?= BASE_URL ?>/index.php?url=vehicles" style="margin-top:16px">Add a vehicle</a>
+    <a class="btn g" href="<?= BASE_URL ?>/index.php?url=vehicles&amp;add=1" style="margin-top:16px">Add a vehicle</a>
   </section>
 
   <section class="card">

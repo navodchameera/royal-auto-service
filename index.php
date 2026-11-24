@@ -6,7 +6,7 @@ session_start();
 define('APP_PATH', __DIR__ . '/app');
 require APP_PATH . '/config/config.php';
 
-foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Package', 'models/Photo',
+foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Package', 'models/Photo',
           'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController'] as $file) {
     require APP_PATH . '/' . $file . '.php';
 }
@@ -21,6 +21,7 @@ $routes = [
     'home'     => ['HomeController', 'index'],
     'settings' => ['AccountController', 'settings'],
     'book'     => ['BookingController', 'create'],
+    'bookings' => ['BookingController', 'index'],
     'vehicles' => ['VehicleController', 'index'],
 ];
 
