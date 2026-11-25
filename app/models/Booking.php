@@ -134,7 +134,26 @@ class Booking
     // Customer accepts the quotation: booking becomes "accepted"
     public function accept(int $bookingId, int $userId): bool
     {
-        return $this->decide($bookingId, $userId, 'accepted', 'accepted');
+        try {
+            $this->db->beginTransaction();
+            $stmt = $this->db->prepare(
+                "UPDATE bookings
+                 SET status = IF(EXISTS (SELECT 1 FROM jobs j WHERE j.booking_id = bookings.booking_id), 'assigned', 'accepted')
+                 WHERE booking_id = :b AND user_id = :u AND status = 'quoted'"
+            );
+            $stmt->execute(['b' => $bookingId, 'u' => $userId]);
+            if ($stmt->rowCount() !== 1) {
+                $this->db->rollBack();
+                return false;
+            }
+            $stmt = $this->db->prepare("UPDATE quotations SET status = 'accepted' WHERE booking_id = :b");
+            $stmt->execute(['b' => $bookingId]);
+            $this->db->commit();
+            return true;
+        } catch (Throwable $ex) {
+            if ($this->db->inTransaction()) { $this->db->rollBack(); }
+            return false;
+        }
     }
 
     // Customer rejects the quotation: booking is cancelled

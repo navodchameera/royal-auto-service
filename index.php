@@ -7,7 +7,7 @@ define('APP_PATH', __DIR__ . '/app');
 require APP_PATH . '/config/config.php';
 
 foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Package', 'models/Photo',
-          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController'] as $file) {
+          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController', 'controllers/ManageCleanersController'] as $file) {
     require APP_PATH . '/' . $file . '.php';
 }
 
@@ -39,6 +39,7 @@ $routes = [
     'manage-bookings'   => ['ManageBookingsController', 'index'],
     'manage-quotations' => ['ManageQuotationsController', 'index'],
     'manage-customers'  => ['ManageCustomersController', 'index'],
+    'manage-cleaners'   => ['ManageCleanersController', 'index'],
 ];
 
 if (!isset($routes[$url])) {

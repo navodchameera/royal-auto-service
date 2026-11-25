@@ -10,6 +10,13 @@ define('DB_PASS', '');
 // Works in a sub folder (/royal-auto) and at a domain root ('').
 define('BASE_URL', rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/'));
 
+// How long one job is assumed to block a cleaner (hours). A cleaner is "free" for a new
+// booking when they have no other job starting within this many hours of it.
+define('JOB_HOURS', 2);
+
+// Password every new cleaner account starts with (they change it in Settings)
+define('DEFAULT_CLEANER_PASSWORD', 'cleaner123');
+
 // Escape output to prevent XSS
 function e($value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');

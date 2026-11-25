@@ -47,7 +47,7 @@ class Manage
                     v.make_model, v.plate_no, v.colour, v.vehicle_type,
                     p.package_name, p.min_price, p.max_price,
                     qt.quoted_price, qt.condition_level, qt.remarks, qt.status AS q_status,
-                    cu.full_name AS cleaner_name
+                    cu.full_name AS cleaner_name, j.cleaner_id
              FROM bookings b
              JOIN users u ON u.user_id = b.user_id
              JOIN vehicles v ON v.vehicle_id = b.vehicle_id
@@ -97,18 +97,48 @@ class Manage
         return $stmt->fetchAll();
     }
 
-    // Creates or replaces the quotation and marks the booking "quoted"
-    public function saveQuotation(int $bookingId, string $price, string $level, string $remarks): bool
+    // Active cleaners for one booking's date and time, with how many other jobs clash with it
+    public function cleanersFor(int $bookingId, string $date, string $time): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT u.user_id, u.full_name,
+                    (SELECT COUNT(*) FROM jobs j JOIN bookings b ON b.booking_id = j.booking_id
+                     WHERE j.cleaner_id = u.user_id AND b.booking_id <> :bid AND b.appointment_date = :d
+                       AND b.status IN ('quoted','accepted','assigned','in_progress')
+                       AND ABS(TIME_TO_SEC(TIMEDIFF(b.appointment_time, :t))) < " . (int)(JOB_HOURS * 3600) . ") AS conflicts
+             FROM users u
+             WHERE u.role = 'cleaner' AND u.status = 'active'
+             ORDER BY u.full_name"
+        );
+        $stmt->execute(['bid' => $bookingId, 'd' => $date, 't' => $time]);
+        return $stmt->fetchAll();
+    }
+
+    private function cleanerFree(int $cleanerId, int $bookingId, string $date, string $time): bool
+    {
+        foreach ($this->cleanersFor($bookingId, $date, $time) as $c) {
+            if ((int)$c['user_id'] === $cleanerId) { return (int)$c['conflicts'] === 0; }
+        }
+        return false;   // not an active cleaner
+    }
+
+    // Saves the quotation, assigns the chosen cleaner and marks the booking "quoted".
+    // Returns '' on success, or a message to show the manager.
+    public function saveQuotation(int $bookingId, string $price, string $level, string $remarks, int $cleanerId): string
     {
         try {
             $this->db->beginTransaction();
 
-            $stmt = $this->db->prepare('SELECT status FROM bookings WHERE booking_id = :b FOR UPDATE');
+            $stmt = $this->db->prepare('SELECT status, appointment_date, appointment_time FROM bookings WHERE booking_id = :b FOR UPDATE');
             $stmt->execute(['b' => $bookingId]);
-            $status = $stmt->fetchColumn();
-            if (!in_array($status, ['requested', 'quoted'], true)) {
+            $row = $stmt->fetch();
+            if (!$row || !in_array($row['status'], ['requested', 'quoted'], true)) {
                 $this->db->rollBack();
-                return false;
+                return 'This booking can no longer be quoted. It may have been cancelled.';
+            }
+            if (!$this->cleanerFree($cleanerId, $bookingId, $row['appointment_date'], $row['appointment_time'])) {
+                $this->db->rollBack();
+                return 'That cleaner is not free at this date and time. Please choose another cleaner.';
             }
 
             $stmt = $this->db->prepare(
@@ -117,19 +147,23 @@ class Manage
                  ON DUPLICATE KEY UPDATE quoted_price = :p2, condition_level = :c2, remarks = :r2,
                                          status = 'sent', quotation_date = NOW()"
             );
-            $stmt->execute([
-                'b' => $bookingId, 'p' => $price, 'c' => $level, 'r' => $remarks !== '' ? $remarks : null,
-                'p2' => $price, 'c2' => $level, 'r2' => $remarks !== '' ? $remarks : null,
-            ]);
+            $r = $remarks !== '' ? $remarks : null;
+            $stmt->execute(['b' => $bookingId, 'p' => $price, 'c' => $level, 'r' => $r, 'p2' => $price, 'c2' => $level, 'r2' => $r]);
+
+            $stmt = $this->db->prepare(
+                "INSERT INTO jobs (booking_id, cleaner_id, job_status) VALUES (:b, :c, 'assigned')
+                 ON DUPLICATE KEY UPDATE cleaner_id = :c2, job_status = 'assigned'"
+            );
+            $stmt->execute(['b' => $bookingId, 'c' => $cleanerId, 'c2' => $cleanerId]);
 
             $stmt = $this->db->prepare("UPDATE bookings SET status = 'quoted' WHERE booking_id = :b");
             $stmt->execute(['b' => $bookingId]);
 
             $this->db->commit();
-            return true;
+            return '';
         } catch (Throwable $ex) {
             if ($this->db->inTransaction()) { $this->db->rollBack(); }
-            return false;
+            return 'Something went wrong while saving. Please try again.';
         }
     }
 
@@ -217,5 +251,28 @@ class Manage
         $stmt = $this->db->prepare("UPDATE users SET status = :s WHERE user_id = :id AND role = 'customer'");
         $stmt->execute(['s' => $status, 'id' => $id]);
         return $stmt->rowCount() === 1;
+    }
+    // ------------------------------------------------------------ cleaners
+    public function cleaners(): array
+    {
+        return $this->db->query(
+            "SELECT u.user_id, u.full_name, u.username, u.email, u.phone, u.address, u.status, u.created_at,
+                    (SELECT COUNT(*) FROM jobs j WHERE j.cleaner_id = u.user_id) AS jobs_total
+             FROM users u WHERE u.role = 'cleaner'
+             ORDER BY u.full_name"
+        )->fetchAll();
+    }
+
+    public function createCleaner(array $d, string $password): int
+    {
+        $stmt = $this->db->prepare(
+            "INSERT INTO users (full_name, username, email, phone, password, address, role, status)
+             VALUES (:n, :u, :e, :p, :pw, :a, 'cleaner', 'active')"
+        );
+        $stmt->execute([
+            'n' => $d['full_name'], 'u' => $d['username'], 'e' => $d['email'], 'p' => $d['phone'],
+            'pw' => password_hash($password, PASSWORD_DEFAULT), 'a' => $d['address'],
+        ]);
+        return (int)$this->db->lastInsertId();
     }
 }

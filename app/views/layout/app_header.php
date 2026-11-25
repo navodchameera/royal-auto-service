@@ -18,7 +18,7 @@ $navByRole = [
         'bookings'   => ['Bookings',   BASE_URL . '/index.php?url=manage-bookings'],
         'quotations' => ['Quotations', BASE_URL . '/index.php?url=manage-quotations'],
         'jobs'       => ['Jobs',       '#'],
-        'cleaners'   => ['Cleaners',   '#'],
+        'cleaners'   => ['Cleaners',   BASE_URL . '/index.php?url=manage-cleaners'],
         'customers'  => ['Customers',  BASE_URL . '/index.php?url=manage-customers'],
         'packages'   => ['Packages',   '#'],
         'payments'   => ['Payments',   '#'],

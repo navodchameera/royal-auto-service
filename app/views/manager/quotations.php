@@ -94,7 +94,26 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
             <textarea class="in" id="remarks" name="remarks" rows="4"><?= e($old['remarks']) ?></textarea>
             <p class="err" id="remarks-err" aria-live="polite"><?= $err('remarks') ?></p>
 
-            <button class="btn" type="submit"><?= $b['status'] === 'quoted' ? 'Update quotation' : 'Send quotation' ?></button>
+            <fieldset class="fs">
+              <legend>Assign a cleaner</legend>
+              <p class="hint" style="margin-top:0">Cleaners with no other job within <?= (int)JOB_HOURS ?> hours of <?= e(substr($b['appointment_time'], 0, 5)) ?> on <?= e(date('D j M', strtotime($b['appointment_date']))) ?>.</p>
+              <?php if ($free): ?>
+                <select class="in" id="cleaner_id" name="cleaner_id" aria-label="Cleaner">
+                  <option value=""<?= $old['cleaner_id'] === '' ? ' selected' : '' ?>>-- Select cleaner --</option>
+                  <?php foreach ($free as $c): ?>
+                    <option value="<?= (int)$c['user_id'] ?>"<?= $old['cleaner_id'] === (string)$c['user_id'] ? ' selected' : '' ?>><?= e($c['full_name']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <p class="err" id="cleaner_id-err" aria-live="polite"><?= $err('cleaner_id') ?></p>
+              <?php else: ?>
+                <div class="alert" role="alert">No cleaner is free at this date and time, so this quotation cannot be sent. You can cancel the booking from its page and ask the customer to choose another time.</div>
+              <?php endif; ?>
+              <?php if ($busy): ?>
+                <p class="hint">Busy then: <?= e(implode(', ', array_column($busy, 'full_name'))) ?></p>
+              <?php endif; ?>
+            </fieldset>
+
+            <button class="btn" type="submit"<?= $free ? '' : ' disabled' ?>><?= $b['status'] === 'quoted' ? 'Update quotation' : 'Send quotation' ?></button>
           </form>
         <?php else: ?>
           <p class="empty">This booking is <?= e(strtolower(status_label($b['status']))) ?>, so its quotation can no longer be changed.</p>

@@ -26,6 +26,7 @@
     plate_no:  function (v) { return /^[A-Za-z0-9 -]{3,15}$/.test(v.trim()) || 'Enter a valid plate number.'; },
     colour:    function (v) { return v.trim().length <= 30 || 'Colour is too long.'; },
     quoted_price: function (v) { var n = v.replace(/,/g, '').trim(); return (/^\d{1,7}(\.\d{1,2})?$/.test(n) && parseFloat(n) > 0) || 'Enter a price greater than 0, for example 6500.'; },
+    cleaner_id: function (v) { return v !== '' || 'Select a cleaner.'; },
     address:   function (v) {
       v = v.trim();
       if (v.length === 0) { return 'Enter your address.'; }

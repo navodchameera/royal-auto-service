@@ -15,10 +15,11 @@ class ManageQuotationsController extends Controller
         if (!isset(self::FILTERS[$filter])) { $filter = 'requested'; }
 
         $errors = [];
-        $old    = ['condition_level' => '', 'quoted_price' => '', 'remarks' => ''];
+        $old    = ['condition_level' => '', 'quoted_price' => '', 'remarks' => '', 'cleaner_id' => ''];
         $id     = ctype_digit((string)($_GET['id'] ?? '')) ? (int)$_GET['id'] : 0;
+        $posted = $_SERVER['REQUEST_METHOD'] === 'POST';
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($posted) {
             $id = (int)($_POST['booking_id'] ?? 0);
             foreach ($old as $key => $_) { $old[$key] = trim((string)($_POST[$key] ?? '')); }
 
@@ -27,12 +28,13 @@ class ManageQuotationsController extends Controller
             } else {
                 $errors = $this->validate($old);
                 if (!$errors) {
-                    $price = number_format((float)str_replace(',', '', $old['quoted_price']), 2, '.', '');
-                    if ($m->saveQuotation($id, $price, $old['condition_level'], $old['remarks'])) {
-                        $_SESSION['flash'] = 'Quotation for booking #' . $id . ' was sent to the customer.';
+                    $price  = number_format((float)str_replace(',', '', $old['quoted_price']), 2, '.', '');
+                    $result = $m->saveQuotation($id, $price, $old['condition_level'], $old['remarks'], (int)$old['cleaner_id']);
+                    if ($result === '') {
+                        $_SESSION['flash'] = 'Quotation for booking #' . $id . ' was sent and the cleaner was assigned.';
                         $this->redirect('manage-quotations&filter=requested');
                     }
-                    $errors['form'] = 'This booking can no longer be quoted. It may have been cancelled.';
+                    $errors['form'] = $result;
                 }
             }
         }
@@ -40,15 +42,25 @@ class ManageQuotationsController extends Controller
         $queue = $m->quoteQueue($filter);
         if (!$id && $queue) { $id = (int)$queue[0]['booking_id']; }
 
-        $detail = $id ? $m->booking($id) : null;
+        $detail   = $id ? $m->booking($id) : null;
         $canQuote = $detail && in_array($detail['status'], ['requested', 'quoted'], true);
 
-        // Show the quotation already sent when re-opening a quoted booking
-        if ($detail && $canQuote && $_SERVER['REQUEST_METHOD'] !== 'POST' && $detail['quoted_price'] !== null) {
+        // Cleaners who are free on the customer's date and time
+        $free = [];
+        $busy = [];
+        if ($detail && $canQuote) {
+            foreach ($m->cleanersFor($id, $detail['appointment_date'], $detail['appointment_time']) as $c) {
+                if ((int)$c['conflicts'] === 0) { $free[] = $c; } else { $busy[] = $c; }
+            }
+        }
+
+        // Re-opening a quotation that was already sent: show what was sent
+        if ($detail && $canQuote && !$posted && $detail['quoted_price'] !== null) {
             $old = [
                 'condition_level' => (string)$detail['condition_level'],
                 'quoted_price'    => (string)(float)$detail['quoted_price'],
                 'remarks'         => (string)$detail['remarks'],
+                'cleaner_id'      => (string)$detail['cleaner_id'],
             ];
         }
 
@@ -58,6 +70,7 @@ class ManageQuotationsController extends Controller
         $this->view('manager/quotations', [
             'user' => $user, 'filters' => self::FILTERS, 'filter' => $filter, 'queue' => $queue,
             'b' => $detail, 'canQuote' => (bool)$canQuote, 'photos' => $detail ? $m->photos($id) : [],
+            'free' => $free, 'busy' => $busy,
             'slots' => BookingController::SLOTS, 'levels' => self::LEVELS,
             'old' => $old, 'errors' => $errors, 'flash' => $flash, 'csrf' => $this->csrfToken(),
         ]);
@@ -75,6 +88,9 @@ class ManageQuotationsController extends Controller
         }
         if (mb_strlen($in['remarks']) > 1000) {
             $e['remarks'] = 'Remarks are too long (1000 characters at most).';
+        }
+        if (!ctype_digit($in['cleaner_id']) || (int)$in['cleaner_id'] <= 0) {
+            $e['cleaner_id'] = 'Select a cleaner.';
         }
         return $e;
     }

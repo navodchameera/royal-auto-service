@@ -20,19 +20,8 @@ class Dashboard
         return [
             // customers waiting for a price
             'requests' => $one("SELECT COUNT(*) FROM bookings WHERE status = 'requested'"),
-            // accepted quotations that have no cleaner yet
-            'need_cleaner' => $one(
-                "SELECT COUNT(*) FROM bookings b
-                 WHERE b.status = 'accepted'
-                   AND NOT EXISTS (SELECT 1 FROM jobs j WHERE j.booking_id = b.booking_id)"
-            ),
-            // finished jobs with no paid payment recorded
-            'payments' => $one(
-                "SELECT COUNT(*) FROM bookings b
-                 WHERE b.status = 'completed'
-                   AND NOT EXISTS (SELECT 1 FROM payments p
-                                   WHERE p.booking_id = b.booking_id AND p.payment_status = 'paid')"
-            ),
+            // quotations sent, waiting for the customer to accept or reject
+            'waiting' => $one("SELECT COUNT(*) FROM bookings WHERE status = 'quoted'"),
         ];
     }
 
