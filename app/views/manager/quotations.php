@@ -33,7 +33,7 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
       </a>
     <?php endforeach; ?>
     <?php if (!$queue): ?>
-      <section class="card"><p class="empty"><?= $filter === 'requested' ? 'No requests are waiting for a quotation.' : 'No quotations are waiting for a customer reply.' ?></p></section>
+      <section class="card"><p class="empty"><?= $filter === 'requested' ? 'No requests are waiting for a quotation.' : 'No sent quotations yet.' ?></p></section>
     <?php endif; ?>
   </div>
 
@@ -113,7 +113,8 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
               <?php endif; ?>
             </fieldset>
 
-            <button class="btn" type="submit"<?= $free ? '' : ' disabled' ?>><?= $b['status'] === 'quoted' ? 'Update quotation' : 'Send quotation' ?></button>
+            <p class="hint">Sending this confirms the booking with this price and cleaner. The customer can cancel if they do not want to go ahead.</p>
+            <button class="btn" type="submit"<?= $free ? '' : ' disabled' ?>><?= $b['status'] === 'assigned' ? 'Update quotation' : 'Send quotation' ?></button>
           </form>
         <?php else: ?>
           <p class="empty">This booking is <?= e(strtolower(status_label($b['status']))) ?>, so its quotation can no longer be changed.</p>

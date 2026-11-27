@@ -4,8 +4,8 @@ defined('APP_PATH') or exit;
 class ManageBookingsController extends Controller
 {
     public const STATUSES = [
-        'all' => 'All', 'requested' => 'Requested', 'quoted' => 'Quoted', 'accepted' => 'Accepted',
-        'assigned' => 'Assigned', 'in_progress' => 'In progress', 'completed' => 'Completed', 'cancelled' => 'Cancelled',
+        'all' => 'All', 'requested' => 'Requested', 'assigned' => 'Cleaner assigned',
+        'in_progress' => 'In progress', 'completed' => 'Completed', 'cancelled' => 'Cancelled',
     ];
 
     public function index(): void
@@ -44,11 +44,18 @@ class ManageBookingsController extends Controller
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$this->csrfValid()) {
                 $error = 'Your session expired. Please try again.';
+            } elseif (($_POST['action'] ?? '') === 'pay') {
+                $result = (new Payment())->record($id, 'cash', ['completed']);
+                if ($result === '') {
+                    $_SESSION['flash'] = 'Booking #' . $id . ' was marked as paid (cash).';
+                    $this->redirect('manage-bookings&id=' . $id);
+                }
+                $error = $result;
             } elseif (($_POST['action'] ?? '') === 'cancel' && $m->cancelBooking($id)) {
                 $_SESSION['flash'] = 'Booking #' . $id . ' was cancelled.';
                 $this->redirect('manage-bookings&id=' . $id);
             } else {
-                $error = 'This booking can no longer be cancelled.';
+                $error = 'This action is not available for this booking.';
             }
         }
 

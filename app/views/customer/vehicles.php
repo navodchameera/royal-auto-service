@@ -90,7 +90,7 @@ $isAdd = $state['mode'] === 'add';
           <button class="btn g" type="button" data-edit="edit_<?= $id ?>" aria-expanded="<?= $isEdit ? 'true' : 'false' ?>" aria-controls="edit_<?= $id ?>">Edit</button>
         <?php endif; ?>
         <?php if ($count === 0): ?>
-          <form method="post" action="<?= e($base) ?>vehicles" data-confirm="Delete <?= e($v['make_model']) ?>?">
+          <form method="post" action="<?= e($base) ?>vehicles"<?= Ui::confirm('Delete ' . $v['make_model'] . '?', 'This vehicle will be removed from your account. This cannot be undone.', 'Delete vehicle', 'danger') ?>>
             <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="vehicle_id" value="<?= $id ?>">
@@ -133,6 +133,5 @@ $isAdd = $state['mode'] === 'add';
   </form>
 </dialog>
 
-<script src="<?= BASE_URL ?>/assets/js/confirm.js" defer></script>
 <script src="<?= BASE_URL ?>/assets/js/vehicles.js" defer></script>
 <?php require APP_PATH . '/views/layout/app_footer.php'; ?>

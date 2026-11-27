@@ -69,7 +69,10 @@ class ManageCustomersController extends Controller
                 }
             } else {
                 $formError = $this->statusAction($m);
-                if ($formError === '') { $this->redirect('manage-customers&id=' . $id); }
+                if ($formError === '') {
+                    // a deleted customer has no page any more
+                    $this->redirect(($_POST['action'] ?? '') === 'delete' ? 'manage-customers' : 'manage-customers&id=' . $id);
+                }
             }
         }
 
@@ -84,21 +87,28 @@ class ManageCustomersController extends Controller
         ]);
     }
 
-    // Ban / unban. Returns an error message, or '' on success (flash message is set)
+    // Ban, unban or delete a customer. Returns an error message, or '' on success (a flash is set)
     private function statusAction(Manage $m): string
     {
         if (!$this->csrfValid()) { return 'Your session expired. Please try again.'; }
 
         $action = $_POST['action'] ?? '';
         $id     = (int)($_POST['customer_id'] ?? 0);
-        if (!in_array($action, ['ban', 'unban'], true) || $id <= 0) { return 'Unknown action.'; }
+        if (!in_array($action, ['ban', 'unban', 'delete'], true) || $id <= 0) { return 'Unknown action.'; }
 
         $customer = $m->customer($id);
         if (!$customer) { return 'Customer not found.'; }
 
-        $new = $action === 'ban' ? 'blocked' : 'active';
-        if ($customer['status'] !== $new) { $m->setCustomerStatus($id, $new); }
+        if ($action === 'delete') {
+            $result = $m->deleteUser($id, 'customer');
+            if (!$result['ok']) { return $result['error']; }
+            foreach ($result['files'] as $file) { @unlink(PhotoUploader::dir() . basename($file)); }
+            $_SESSION['flash'] = $customer['full_name'] . ' was deleted.';
+            return '';
+        }
 
+        $new = $action === 'ban' ? 'blocked' : 'active';
+        if ($customer['status'] !== $new) { $m->setUserStatus($id, 'customer', $new); }
         $_SESSION['flash'] = $customer['full_name'] . ($action === 'ban' ? ' was banned.' : ' can log in again.');
         return '';
     }

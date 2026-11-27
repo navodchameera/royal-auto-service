@@ -14,10 +14,9 @@ INSERT INTO bookings (user_id, vehicle_id, package_id, location_type, job_addres
 VALUES (@uid, @v1, 2, 'customer_site', 'Sample address, Negombo', DATE_ADD(CURDATE(), INTERVAL 6 DAY), '10:00:00', 'assigned');
 INSERT INTO quotations (booking_id, quoted_price, condition_level, status) VALUES (LAST_INSERT_ID(), 7000, 'moderate', 'accepted');
 
--- Quotation ready
+-- New request waiting for a quotation
 INSERT INTO bookings (user_id, vehicle_id, package_id, location_type, appointment_date, appointment_time, status)
-VALUES (@uid, @v2, 3, 'garage', DATE_ADD(CURDATE(), INTERVAL 10 DAY), '09:00:00', 'quoted');
-INSERT INTO quotations (booking_id, quoted_price, condition_level, status) VALUES (LAST_INSERT_ID(), 8500, 'light', 'sent');
+VALUES (@uid, @v2, 3, 'garage', DATE_ADD(CURDATE(), INTERVAL 10 DAY), '09:00:00', 'requested');
 
 -- Completed, payment due
 INSERT INTO bookings (user_id, vehicle_id, package_id, location_type, appointment_date, appointment_time, status)
@@ -29,7 +28,7 @@ INSERT INTO bookings (user_id, vehicle_id, package_id, location_type, appointmen
 VALUES (@uid, @v2, 1, 'garage', DATE_SUB(CURDATE(), INTERVAL 16 DAY), '11:00:00', 'completed');
 SET @b = LAST_INSERT_ID();
 INSERT INTO quotations (booking_id, quoted_price, status) VALUES (@b, 2500, 'accepted');
-INSERT INTO payments (booking_id, amount, method, payment_status, payment_date) VALUES (@b, 2500, 'card', 'paid', NOW());
+INSERT INTO payments (booking_id, amount, method, payment_status, payment_date) VALUES (@b, 2500, 'online', 'paid', NOW());
 
 -- Completed, paid, reviewed
 INSERT INTO bookings (user_id, vehicle_id, package_id, location_type, appointment_date, appointment_time, status)

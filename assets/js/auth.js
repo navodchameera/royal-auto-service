@@ -27,6 +27,15 @@
     colour:    function (v) { return v.trim().length <= 30 || 'Colour is too long.'; },
     quoted_price: function (v) { var n = v.replace(/,/g, '').trim(); return (/^\d{1,7}(\.\d{1,2})?$/.test(n) && parseFloat(n) > 0) || 'Enter a price greater than 0, for example 6500.'; },
     cleaner_id: function (v) { return v !== '' || 'Select a cleaner.'; },
+    card_name: function (v) { return /^[A-Za-z][A-Za-z .'-]{1,59}$/.test(v.trim()) || 'Enter the name on the card.'; },
+    card_number: function (v) { return /^\d{13,19}$/.test(v.replace(/\s+/g, '')) || 'Enter a valid card number.'; },
+    card_expiry: function (v) {
+      var m = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(v.trim());
+      if (!m) { return 'Enter the expiry date as MM/YY.'; }
+      var now = new Date(), year = 2000 + parseInt(m[2], 10), month = parseInt(m[1], 10);
+      return (year > now.getFullYear() || (year === now.getFullYear() && month >= now.getMonth() + 1)) || 'This card has expired.';
+    },
+    card_cvv:  function (v) { return /^\d{3,4}$/.test(v) || 'Enter the 3 or 4 digit security code.'; },
     address:   function (v) {
       v = v.trim();
       if (v.length === 0) { return 'Enter your address.'; }

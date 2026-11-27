@@ -6,7 +6,7 @@ require APP_PATH . '/views/layout/app_header.php';
 
 $tiles = [
     ['New requests to quote',      $counts['requests'],     'Review requests', true,  BASE_URL . '/index.php?url=manage-quotations'],
-    ['Waiting for customer reply', $counts['waiting'],      'View quotations', false, BASE_URL . '/index.php?url=manage-quotations&filter=quoted'],
+    ['Confirmed, not started',     $counts['upcoming'],     'See bookings',    false, BASE_URL . '/index.php?url=manage-bookings&status=assigned'],
     ['Jobs today',                 count($schedule),        'See bookings',    false, BASE_URL . '/index.php?url=manage-bookings'],
 ];
 ?>

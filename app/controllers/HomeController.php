@@ -21,7 +21,11 @@ class HomeController extends Controller
             return;
         }
 
-        // The cleaner home is designed but not built yet
+        if ($user['role'] === 'cleaner') {
+            (new CleanerJobsController())->index();
+            return;
+        }
+
         if ($user['role'] !== 'customer') {
             $this->view('home', ['user' => $user]);
             return;

@@ -204,3 +204,32 @@ textarea.in{min-height:96px;resize:vertical}
 .qprice{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;letter-spacing:-.03em;margin:2px 0 8px}
 a{color:#0A7C91}
 @media(max-width:860px){.photos{grid-template-columns:1fr 1fr}.search .in{width:100%}}
+
+/* Payments */
+.alert.note{background:#EAF1F5;color:#0B1B2B;margin-bottom:18px}
+.paytotal{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 18px;padding:14px 16px;border-radius:14px;background:#F0F8FA}
+.paytotal .big{font-size:30px}
+.sect{font-size:15px;font-weight:600;margin:6px 0 0}
+
+/* Confirmation dialog */
+.dlg-sm{width:min(440px,92vw)}
+.dlg-sm .dh{padding-bottom:6px}
+.dlg-sm .dh h2{font-size:20px}
+.dlg-sm .db{padding:0 24px 16px;line-height:1.55}
+.confirm-actions{display:flex;gap:10px;justify-content:flex-end}
+.confirm-actions .btn{min-width:110px}
+.btn.danger-solid{background:#B3261E;color:#fff}
+.btn.danger-solid:hover{background:#8F1D17}
+
+/* Three dots menu */
+.acts.nowrap{flex-wrap:nowrap}
+.kebab{display:inline-block}
+.kebab-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:12px;background:#EAF1F5;color:#0B1B2B;cursor:pointer}
+.kebab-btn:hover,.kebab-btn[aria-expanded="true"]{background:#DCE7EE}
+.kebab-btn:focus-visible{outline:3px solid #6FD0E0;outline-offset:2px}
+.menu-pop{position:fixed;z-index:80;min-width:190px;padding:6px;border-radius:16px;background:#0B1B2B;box-shadow:0 16px 48px rgba(11,27,43,.35)}
+.menu-pop form{margin:0}
+.menu-item{display:block;width:100%;min-height:44px;padding:0 14px;border:0;border-radius:10px;background:none;color:#fff;font:500 15px Inter,sans-serif;text-align:left;cursor:pointer}
+.menu-item:hover,.menu-item:focus-visible{background:#16344D;outline:none}
+.menu-item.red{color:#FF8A80}
+.menu-sep{height:1px;margin:4px 8px;background:#1D3A52}

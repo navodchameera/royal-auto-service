@@ -13,17 +13,27 @@ class ManageCleanersController extends Controller
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            foreach ($old as $key => $_) { $old[$key] = trim((string)($_POST[$key] ?? '')); }
+            $action = (string)($_POST['action'] ?? '');
 
-            if (!$this->csrfValid()) {
-                $errors['form'] = 'Your session expired. Please try again.';
+            if (in_array($action, ['ban', 'unban', 'delete'], true)) {
+                // Row menu: ban, unban or delete a cleaner
+                $error = $this->userAction($m, $action);
+                if ($error === '') { $this->redirect('manage-cleaners'); }
+                $errors['page'] = $error;
             } else {
-                $errors = $this->validate($old, $m, $users);
-                if (!$errors) {
-                    $m->createCleaner($old, DEFAULT_CLEANER_PASSWORD);
-                    $_SESSION['flash'] = 'Account created for ' . $old['full_name'] . '. Username: ' . $old['username']
-                        . ', password: ' . DEFAULT_CLEANER_PASSWORD . '. Ask them to change it in Settings.';
-                    $this->redirect('manage-cleaners');
+                // The "Add a cleaner" dialog
+                foreach ($old as $key => $_) { $old[$key] = trim((string)($_POST[$key] ?? '')); }
+
+                if (!$this->csrfValid()) {
+                    $errors['form'] = 'Your session expired. Please try again.';
+                } else {
+                    $errors = $this->validate($old, $m, $users);
+                    if (!$errors) {
+                        $m->createCleaner($old, DEFAULT_CLEANER_PASSWORD);
+                        $_SESSION['flash'] = 'Account created for ' . $old['full_name'] . '. Username: ' . $old['username']
+                            . ', password: ' . DEFAULT_CLEANER_PASSWORD . '. Ask them to change it in Settings.';
+                        $this->redirect('manage-cleaners');
+                    }
                 }
             }
         }
@@ -35,6 +45,26 @@ class ManageCleanersController extends Controller
             'user' => $user, 'cleaners' => $m->cleaners(), 'old' => $old, 'errors' => $errors,
             'flash' => $flash, 'csrf' => $this->csrfToken(),
         ]);
+    }
+
+    private function userAction(Manage $m, string $action): string
+    {
+        if (!$this->csrfValid()) { return 'Your session expired. Please try again.'; }
+
+        $id      = (int)($_POST['cleaner_id'] ?? 0);
+        $cleaner = $id > 0 ? $m->userByRole($id, 'cleaner') : null;
+        if (!$cleaner) { return 'Cleaner not found.'; }
+
+        if ($action === 'delete') {
+            $result = $m->deleteUser($id, 'cleaner');
+            if (!$result['ok']) { return $result['error']; }
+            $_SESSION['flash'] = $cleaner['full_name'] . ' was deleted.';
+            return '';
+        }
+
+        $m->setUserStatus($id, 'cleaner', $action === 'ban' ? 'blocked' : 'active');
+        $_SESSION['flash'] = $cleaner['full_name'] . ($action === 'ban' ? ' was banned.' : ' can log in again.');
+        return '';
     }
 
     private function validate(array $in, Manage $m, User $users): array

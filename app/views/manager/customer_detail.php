@@ -8,6 +8,11 @@ $banned    = $c['status'] === 'blocked';
 require APP_PATH . '/views/layout/app_header.php';
 $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
 ?>
+<?php
+$name    = $c['full_name'];
+$postUrl = $base . 'manage-customers&id=' . $id;
+$extra   = $activeBookings > 0 ? ' They have ' . (int)$activeBookings . ' active booking' . ($activeBookings === 1 ? '' : 's') . '.' : '';
+?>
 <div class="top">
   <div>
     <a class="back" href="<?= e($base) ?>manage-customers">← All customers</a>
@@ -15,6 +20,17 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
     <div class="sub">@<?= e($c['username']) ?> · joined <?= e(date('j M Y', strtotime($c['created_at']))) ?> ·
       <span class="pill<?= $banned ? ' warn' : '' ?>"><?= $banned ? 'Banned' : 'Active' ?></span></div>
   </div>
+  <?= Ui::rowMenu('menu_customer', 'More actions', [
+      $banned
+        ? ['label' => 'Unban', 'url' => $postUrl, 'csrf' => $csrf, 'fields' => ['action' => 'unban', 'customer_id' => $id],
+           'title' => 'Unban ' . $name . '?', 'text' => $name . ' will be able to log in again.', 'ok' => 'Unban customer']
+        : ['label' => 'Ban', 'url' => $postUrl, 'csrf' => $csrf, 'fields' => ['action' => 'ban', 'customer_id' => $id],
+           'title' => 'Ban ' . $name . '?', 'text' => $name . ' will be signed out and will not be able to log in. Their data and bookings are kept.' . $extra,
+           'ok' => 'Ban customer', 'tone' => 'danger'],
+      ['label' => 'Delete', 'url' => $postUrl, 'csrf' => $csrf, 'fields' => ['action' => 'delete', 'customer_id' => $id],
+       'title' => 'Delete ' . $name . '?', 'text' => 'This permanently deletes ' . $name . ' and all their vehicles, bookings, photos and payments from the database.' . $extra . ' This cannot be undone.',
+       'ok' => 'Delete customer', 'tone' => 'danger', 'red' => true],
+  ]) ?>
 </div>
 
 <?php if (!empty($flash)): ?><div class="alert ok" role="status"><?= e($flash) ?></div><?php endif; ?>
@@ -76,21 +92,6 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
 
   <div class="g2">
     <section class="card">
-      <h2>Account status</h2>
-      <?php if ($banned): ?>
-        <p class="m" style="margin-top:0">This customer is banned and cannot log in.</p>
-      <?php else: ?>
-        <p class="m" style="margin-top:0">Banning signs the customer out and stops them logging in. Their data and bookings are kept.<?= $activeBookings > 0 ? ' They have ' . (int)$activeBookings . ' active booking' . ($activeBookings === 1 ? '' : 's') . ' that you may want to cancel.' : '' ?></p>
-      <?php endif; ?>
-      <form method="post" action="<?= e($base) ?>manage-customers&amp;id=<?= $id ?>"<?= $banned ? '' : ' data-confirm="Ban ' . e($c['full_name']) . '? They will be signed out and cannot log in."' ?>>
-        <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
-        <input type="hidden" name="action" value="<?= $banned ? 'unban' : 'ban' ?>">
-        <input type="hidden" name="customer_id" value="<?= $id ?>">
-        <button class="btn <?= $banned ? '' : 'danger' ?>" type="submit"><?= $banned ? 'Unban customer' : 'Ban customer' ?></button>
-      </form>
-    </section>
-
-    <section class="card">
       <h2>Vehicles</h2>
       <?php if ($vehicles): ?>
         <div class="lst">
@@ -104,5 +105,4 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
     </section>
   </div>
 </div>
-<script src="<?= BASE_URL ?>/assets/js/confirm.js" defer></script>
 <?php require APP_PATH . '/views/layout/app_footer.php'; ?>

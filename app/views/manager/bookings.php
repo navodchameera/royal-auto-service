@@ -30,7 +30,7 @@ require APP_PATH . '/views/layout/app_header.php';
   <?php if ($bookings): ?>
     <div class="tblwrap">
       <table class="tbl">
-        <thead><tr><th>Booking</th><th>Customer</th><th>Vehicle</th><th>Package</th><th>When</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Booking</th><th>Customer</th><th>Vehicle</th><th>Package</th><th>When</th><th>Status</th><th>Payment</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($bookings as $b): $id = (int)$b['booking_id']; ?>
           <tr>
@@ -40,6 +40,7 @@ require APP_PATH . '/views/layout/app_header.php';
             <td><?= e($b['package_name']) ?><br><span class="m"><?= e(location_label($b['location_type'])) ?></span></td>
             <td><?= e(date('j M Y', strtotime($b['appointment_date']))) ?><br><span class="m"><?= e(substr($b['appointment_time'], 0, 5)) ?></span></td>
             <td><span class="pill<?= $b['status'] === 'requested' ? ' ink' : '' ?>"><?= e(status_label($b['status'])) ?></span></td>
+            <td><?php if ($b['pay_method']): ?><span class="pill">Paid · <?= e(method_label($b['pay_method'])) ?></span><?php elseif ($b['status'] === 'completed'): ?><span class="pill ink">Unpaid</span><?php else: ?><span class="m">–</span><?php endif; ?></td>
             <td>
               <?php if ($b['status'] === 'requested'): ?>
                 <a class="btn" href="<?= e($base) ?>manage-quotations&amp;id=<?= $id ?>">Quote</a>

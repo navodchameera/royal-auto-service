@@ -5,7 +5,7 @@ $navActive = 'bookings';
 $base      = BASE_URL . '/index.php?url=';
 $id        = (int)$b['booking_id'];
 $canCancel = in_array($b['status'], ['requested', 'quoted', 'accepted', 'assigned'], true);
-$canQuote  = in_array($b['status'], ['requested', 'quoted'], true);
+$canQuote  = in_array($b['status'], ['requested', 'assigned'], true);
 require APP_PATH . '/views/layout/app_header.php';
 ?>
 <div class="top">
@@ -73,6 +73,25 @@ require APP_PATH . '/views/layout/app_header.php';
     </section>
 
     <section class="card">
+      <h2>Payment</h2>
+      <?php if ($b['pay_method']): ?>
+        <p style="margin:0 0 6px"><span class="pill">Paid · <?= e(method_label($b['pay_method'])) ?></span></p>
+        <p class="m" style="margin:0"><?= e(date('j M Y, H:i', strtotime($b['pay_date']))) ?></p>
+      <?php elseif ($b['quoted_price'] === null): ?>
+        <p class="empty">Nothing to pay until a quotation is sent.</p>
+      <?php elseif ($b['status'] === 'completed'): ?>
+        <p class="m" style="margin-top:0">The job is complete and unpaid. If the customer paid in cash, mark it as paid.</p>
+        <form method="post" action="<?= e($base) ?>manage-bookings&amp;id=<?= $id ?>"<?= Ui::confirm('Mark booking #' . $id . ' as paid?', 'Confirm that the customer paid ' . money($b['quoted_price']) . ' in cash. This is recorded as a cash payment.', 'Mark as paid') ?>> as paid in cash (<?= e(money($b['quoted_price'])) ?>)?">
+          <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+          <input type="hidden" name="action" value="pay">
+          <button class="btn" type="submit">Mark as paid (cash)</button>
+        </form>
+      <?php else: ?>
+        <p class="empty">Unpaid. The customer can pay online now, or in cash after the service.</p>
+      <?php endif; ?>
+    </section>
+
+    <section class="card">
       <h2>Quotation</h2>
       <?php if ($b['quoted_price'] !== null): ?>
         <div class="qprice"><?= e(money($b['quoted_price'])) ?></div>
@@ -86,10 +105,10 @@ require APP_PATH . '/views/layout/app_header.php';
       <?php endif; ?>
       <div class="acts" style="margin-top:12px">
         <?php if ($canQuote): ?>
-          <a class="btn" href="<?= e($base) ?>manage-quotations&amp;id=<?= $id ?>&amp;filter=<?= $b['status'] === 'quoted' ? 'quoted' : 'requested' ?>"><?= $b['quoted_price'] !== null ? 'Update quotation' : 'Create quotation' ?></a>
+          <a class="btn" href="<?= e($base) ?>manage-quotations&amp;id=<?= $id ?>&amp;filter=<?= $b['status'] === 'assigned' ? 'sent' : 'requested' ?>"><?= $b['quoted_price'] !== null ? 'Update quotation' : 'Create quotation' ?></a>
         <?php endif; ?>
         <?php if ($canCancel): ?>
-          <form method="post" action="<?= e($base) ?>manage-bookings&amp;id=<?= $id ?>" data-confirm="Cancel booking #<?= $id ?>? The customer will see it as cancelled.">
+          <form method="post" action="<?= e($base) ?>manage-bookings&amp;id=<?= $id ?>"<?= Ui::confirm('Cancel booking #' . $id . '?', 'The customer will see this booking as cancelled and the cleaner will be free again for that time.', 'Cancel booking', 'danger', 'Keep booking') ?>>? The customer will see it as cancelled.">
             <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
             <input type="hidden" name="action" value="cancel">
             <button class="btn danger" type="submit">Cancel booking</button>
@@ -99,5 +118,4 @@ require APP_PATH . '/views/layout/app_header.php';
     </section>
   </div>
 </div>
-<script src="<?= BASE_URL ?>/assets/js/confirm.js" defer></script>
 <?php require APP_PATH . '/views/layout/app_footer.php'; ?>

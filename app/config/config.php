@@ -39,6 +39,10 @@ function status_label(string $status): string {
     return $labels[$status] ?? ucfirst($status);
 }
 
+function method_label(string $method): string {
+    return $method === 'online' ? 'Online' : ucfirst($method);
+}
+
 function location_label(string $type): string {
     return $type === 'customer_site' ? 'At my location' : 'At Royal Auto Service';
 }

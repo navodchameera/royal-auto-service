@@ -9,7 +9,7 @@ $navByRole = [
         'book'     => ['Book a service', BASE_URL . '/index.php?url=book'],
         'bookings' => ['My bookings',    BASE_URL . '/index.php?url=bookings'],
         'vehicles' => ['My vehicles',    BASE_URL . '/index.php?url=vehicles'],
-        'payments' => ['Payments',       '#'],
+        'payments' => ['Payments',       BASE_URL . '/index.php?url=payments'],
         'reviews'  => ['Reviews',        '#'],
         'settings' => $settings,
     ],
@@ -25,7 +25,7 @@ $navByRole = [
         'reviews'    => ['Reviews',    '#'],
         'settings'   => $settings,
     ],
-    'cleaner' => ['home' => ['Home', BASE_URL . '/index.php?url=home'], 'settings' => $settings],
+    'cleaner' => ['home' => ['My jobs', BASE_URL . '/index.php?url=home'], 'settings' => $settings],
 ];
 $navItems = $navByRole[$user['role']] ?? $navByRole['customer'];
 

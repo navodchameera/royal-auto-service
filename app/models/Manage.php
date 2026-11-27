@@ -15,7 +15,8 @@ class Manage
     public function bookings(string $status, string $q): array
     {
         $sql = "SELECT b.booking_id, b.location_type, b.appointment_date, b.appointment_time, b.status,
-                       u.full_name, v.make_model, v.plate_no, p.package_name, qt.quoted_price
+                       u.full_name, v.make_model, v.plate_no, p.package_name, qt.quoted_price,
+                       (SELECT pm.method FROM payments pm WHERE pm.booking_id = b.booking_id AND pm.payment_status = 'paid' ORDER BY pm.payment_id LIMIT 1) AS pay_method
                 FROM bookings b
                 JOIN users u ON u.user_id = b.user_id
                 JOIN vehicles v ON v.vehicle_id = b.vehicle_id
@@ -47,7 +48,9 @@ class Manage
                     v.make_model, v.plate_no, v.colour, v.vehicle_type,
                     p.package_name, p.min_price, p.max_price,
                     qt.quoted_price, qt.condition_level, qt.remarks, qt.status AS q_status,
-                    cu.full_name AS cleaner_name, j.cleaner_id
+                    cu.full_name AS cleaner_name, j.cleaner_id,
+                    (SELECT pm.method FROM payments pm WHERE pm.booking_id = b.booking_id AND pm.payment_status = 'paid' ORDER BY pm.payment_id LIMIT 1) AS pay_method,
+                    (SELECT pm.payment_date FROM payments pm WHERE pm.booking_id = b.booking_id AND pm.payment_status = 'paid' ORDER BY pm.payment_id LIMIT 1) AS pay_date
              FROM bookings b
              JOIN users u ON u.user_id = b.user_id
              JOIN vehicles v ON v.vehicle_id = b.vehicle_id
@@ -80,8 +83,11 @@ class Manage
     }
 
     // ---------------------------------------------------------- quotations
-    public function quoteQueue(string $status): array
+    public function quoteQueue(string $filter): array
     {
+        $cond = $filter === 'sent'
+            ? "b.status = 'assigned' AND EXISTS (SELECT 1 FROM quotations qt WHERE qt.booking_id = b.booking_id)"
+            : "b.status = 'requested'";
         $stmt = $this->db->prepare(
             "SELECT b.booking_id, b.appointment_date, b.appointment_time, b.status,
                     u.full_name, v.make_model, v.plate_no, p.package_name,
@@ -90,10 +96,10 @@ class Manage
              JOIN users u ON u.user_id = b.user_id
              JOIN vehicles v ON v.vehicle_id = b.vehicle_id
              JOIN packages p ON p.package_id = b.package_id
-             WHERE b.status = :s
+             WHERE " . $cond . "
              ORDER BY b.created_at, b.booking_id"
         );
-        $stmt->execute(['s' => $status]);
+        $stmt->execute();
         return $stmt->fetchAll();
     }
 
@@ -122,7 +128,7 @@ class Manage
         return false;   // not an active cleaner
     }
 
-    // Saves the quotation, assigns the chosen cleaner and marks the booking "quoted".
+    // Saves the quotation, assigns the chosen cleaner and confirms the booking (status "assigned").
     // Returns '' on success, or a message to show the manager.
     public function saveQuotation(int $bookingId, string $price, string $level, string $remarks, int $cleanerId): string
     {
@@ -132,7 +138,7 @@ class Manage
             $stmt = $this->db->prepare('SELECT status, appointment_date, appointment_time FROM bookings WHERE booking_id = :b FOR UPDATE');
             $stmt->execute(['b' => $bookingId]);
             $row = $stmt->fetch();
-            if (!$row || !in_array($row['status'], ['requested', 'quoted'], true)) {
+            if (!$row || !in_array($row['status'], ['requested', 'assigned'], true)) {
                 $this->db->rollBack();
                 return 'This booking can no longer be quoted. It may have been cancelled.';
             }
@@ -156,7 +162,7 @@ class Manage
             );
             $stmt->execute(['b' => $bookingId, 'c' => $cleanerId, 'c2' => $cleanerId]);
 
-            $stmt = $this->db->prepare("UPDATE bookings SET status = 'quoted' WHERE booking_id = :b");
+            $stmt = $this->db->prepare("UPDATE bookings SET status = 'assigned' WHERE booking_id = :b");
             $stmt->execute(['b' => $bookingId]);
 
             $this->db->commit();
@@ -246,11 +252,60 @@ class Manage
         $stmt->execute(['n' => $d['full_name'], 'e' => $d['email'], 'p' => $d['phone'], 'a' => $d['address'], 'id' => $id]);
     }
 
-    public function setCustomerStatus(int $id, string $status): bool
+    public function setUserStatus(int $id, string $role, string $status): bool
     {
-        $stmt = $this->db->prepare("UPDATE users SET status = :s WHERE user_id = :id AND role = 'customer'");
-        $stmt->execute(['s' => $status, 'id' => $id]);
+        $stmt = $this->db->prepare("UPDATE users SET status = :s WHERE user_id = :id AND role = :r");
+        $stmt->execute(['s' => $status, 'id' => $id, 'r' => $role]);
         return $stmt->rowCount() === 1;
+    }
+
+    public function userByRole(int $id, string $role): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE user_id = :id AND role = :r LIMIT 1");
+        $stmt->execute(['id' => $id, 'r' => $role]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    // Permanently deletes a customer or cleaner (the database cascades to their records).
+    // Returns ['ok' => bool, 'error' => string, 'files' => photo file names to remove from disk]
+    public function deleteUser(int $id, string $role): array
+    {
+        try {
+            $this->db->beginTransaction();
+
+            if ($role === 'cleaner') {
+                $stmt = $this->db->prepare(
+                    "SELECT COUNT(*) FROM jobs j JOIN bookings b ON b.booking_id = j.booking_id
+                     WHERE j.cleaner_id = :id AND b.status IN ('assigned','in_progress')"
+                );
+                $stmt->execute(['id' => $id]);
+                if ((int)$stmt->fetchColumn() > 0) {
+                    $this->db->rollBack();
+                    return ['ok' => false, 'files' => [], 'error' => 'This cleaner still has upcoming jobs. Update those quotations to another cleaner, or cancel the bookings, first.'];
+                }
+            }
+
+            // Remember the customer's photo files, because the rows vanish with the cascade
+            $stmt = $this->db->prepare(
+                "SELECT ph.file_path FROM photos ph JOIN bookings b ON b.booking_id = ph.booking_id WHERE b.user_id = :id"
+            );
+            $stmt->execute(['id' => $id]);
+            $files = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            $stmt = $this->db->prepare("DELETE FROM users WHERE user_id = :id AND role = :r");
+            $stmt->execute(['id' => $id, 'r' => $role]);
+            if ($stmt->rowCount() !== 1) {
+                $this->db->rollBack();
+                return ['ok' => false, 'files' => [], 'error' => 'User not found.'];
+            }
+
+            $this->db->commit();
+            return ['ok' => true, 'files' => $files, 'error' => ''];
+        } catch (Throwable $ex) {
+            if ($this->db->inTransaction()) { $this->db->rollBack(); }
+            return ['ok' => false, 'files' => [], 'error' => 'The user could not be deleted because other records still depend on them. Run the cascade version of the database script and try again.'];
+        }
     }
     // ------------------------------------------------------------ cleaners
     public function cleaners(): array

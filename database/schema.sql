@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS payments (
   payment_id     INT AUTO_INCREMENT PRIMARY KEY,
   booking_id     INT NOT NULL,
   amount         DECIMAL(10,2) NOT NULL,
-  method         ENUM('cash','card','bank_transfer') NOT NULL,
+  method         ENUM('cash','online') NOT NULL,
   payment_status ENUM('pending','paid') NOT NULL DEFAULT 'pending',
   payment_date   DATETIME NULL,
   FOREIGN KEY (booking_id) REFERENCES bookings(booking_id)

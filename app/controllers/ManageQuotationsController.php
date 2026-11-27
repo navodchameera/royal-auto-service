@@ -3,7 +3,7 @@ defined('APP_PATH') or exit;
 
 class ManageQuotationsController extends Controller
 {
-    private const FILTERS = ['requested' => 'To quote', 'quoted' => 'Sent to customer'];
+    private const FILTERS = ['requested' => 'To quote', 'sent' => 'Sent'];
     private const LEVELS  = ['light' => 'Light', 'moderate' => 'Moderate', 'heavy' => 'Heavy'];
 
     public function index(): void
@@ -31,7 +31,7 @@ class ManageQuotationsController extends Controller
                     $price  = number_format((float)str_replace(',', '', $old['quoted_price']), 2, '.', '');
                     $result = $m->saveQuotation($id, $price, $old['condition_level'], $old['remarks'], (int)$old['cleaner_id']);
                     if ($result === '') {
-                        $_SESSION['flash'] = 'Quotation for booking #' . $id . ' was sent and the cleaner was assigned.';
+                        $_SESSION['flash'] = 'Quotation for booking #' . $id . ' was sent. The booking is confirmed and the cleaner is assigned.';
                         $this->redirect('manage-quotations&filter=requested');
                     }
                     $errors['form'] = $result;
@@ -43,7 +43,7 @@ class ManageQuotationsController extends Controller
         if (!$id && $queue) { $id = (int)$queue[0]['booking_id']; }
 
         $detail   = $id ? $m->booking($id) : null;
-        $canQuote = $detail && in_array($detail['status'], ['requested', 'quoted'], true);
+        $canQuote = $detail && in_array($detail['status'], ['requested', 'assigned'], true);
 
         // Cleaners who are free on the customer's date and time
         $free = [];

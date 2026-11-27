@@ -65,7 +65,7 @@ class BookingController extends Controller
             if (!$errors) {
                 $bookingId = $this->store($old, $uid, $vehicles);
                 if ($bookingId) {
-                    $_SESSION['flash'] = 'Booking #' . $bookingId . ' submitted. We will send your quotation after reviewing the photos.';
+                    $_SESSION['flash'] = 'Booking #' . $bookingId . ' submitted. We will confirm it with a price and a cleaner after reviewing the photos.';
                     $this->redirect('home');
                 }
                 $errors['form'] = 'We could not save your booking. Please try again.';
@@ -197,7 +197,7 @@ class BookingController extends Controller
             return null;
         }
     }
-    // My bookings: list, filter, accept / reject a quotation, cancel
+    // My bookings: list, filter and cancel
     public function index(): void
     {
         if (!isset($_SESSION['user'])) { $this->redirect('login'); }
@@ -205,7 +205,7 @@ class BookingController extends Controller
         if ($user['role'] !== 'customer') { $this->redirect('home'); }
 
         $uid     = (int)$user['id'];
-        $filters = ['all' => 'All', 'quoted' => 'Quotation ready', 'active' => 'Active', 'completed' => 'Completed'];
+        $filters = ['all' => 'All', 'active' => 'Active', 'completed' => 'Completed'];
         $filter  = (string)($_GET['filter'] ?? 'all');
         if (!isset($filters[$filter])) { $filter = 'all'; }
 
@@ -213,22 +213,15 @@ class BookingController extends Controller
         $error    = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id     = (int)($_POST['booking_id'] ?? 0);
-            $action = $_POST['action'] ?? '';
+            $id = (int)($_POST['booking_id'] ?? 0);
 
             if (!$this->csrfValid()) {
                 $error = 'Your session expired. Please try again.';
-            } elseif ($action === 'accept' && $bookings->accept($id, $uid)) {
-                $_SESSION['flash'] = 'Quotation accepted. Your booking #' . $id . ' is confirmed.';
-                $this->redirect('bookings&filter=' . $filter);
-            } elseif ($action === 'reject' && $bookings->reject($id, $uid)) {
-                $_SESSION['flash'] = 'Quotation rejected. Booking #' . $id . ' was cancelled.';
-                $this->redirect('bookings&filter=' . $filter);
-            } elseif ($action === 'cancel' && $bookings->cancel($id, $uid)) {
+            } elseif (($_POST['action'] ?? '') === 'cancel' && $bookings->cancel($id, $uid)) {
                 $_SESSION['flash'] = 'Booking #' . $id . ' was cancelled.';
                 $this->redirect('bookings&filter=' . $filter);
             } else {
-                $error = 'That action is no longer available for this booking.';
+                $error = 'This booking can no longer be cancelled.';
             }
         }
 

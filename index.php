@@ -6,8 +6,8 @@ session_start();
 define('APP_PATH', __DIR__ . '/app');
 require APP_PATH . '/config/config.php';
 
-foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Package', 'models/Photo',
-          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController', 'controllers/ManageCleanersController'] as $file) {
+foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'core/Ui', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Payment', 'models/Jobs', 'models/Package', 'models/Photo',
+          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController', 'controllers/ManageCleanersController', 'controllers/PaymentController', 'controllers/CleanerJobsController'] as $file) {
     require APP_PATH . '/' . $file . '.php';
 }
 
@@ -40,6 +40,8 @@ $routes = [
     'manage-quotations' => ['ManageQuotationsController', 'index'],
     'manage-customers'  => ['ManageCustomersController', 'index'],
     'manage-cleaners'   => ['ManageCleanersController', 'index'],
+    'payments'          => ['PaymentController', 'index'],
+    'pay'               => ['PaymentController', 'pay'],
 ];
 
 if (!isset($routes[$url])) {

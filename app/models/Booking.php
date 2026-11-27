@@ -38,12 +38,12 @@ class Booking
         $stmt = $this->db->prepare(
             "SELECT b.booking_id, q.quoted_price
              FROM bookings b JOIN quotations q ON q.booking_id = b.booking_id
-             WHERE b.user_id = :u AND b.status = 'quoted'
+             WHERE b.user_id = :u AND b.status = 'assigned'
              ORDER BY b.appointment_date"
         );
         $stmt->execute(['u' => $userId]);
         foreach ($stmt->fetchAll() as $r) {
-            $items[] = ['title' => 'Quotation ready', 'meta' => '#' . $r['booking_id'] . ' · ' . money($r['quoted_price']), 'button' => 'Review', 'href' => 'bookings&filter=quoted'];
+            $items[] = ['title' => 'New quotation', 'meta' => '#' . $r['booking_id'] . ' · ' . money($r['quoted_price']), 'button' => 'View', 'href' => 'bookings'];
         }
 
         $stmt = $this->db->prepare(
@@ -56,7 +56,7 @@ class Booking
         );
         $stmt->execute(['u' => $userId]);
         foreach ($stmt->fetchAll() as $r) {
-            $items[] = ['title' => 'Payment due', 'meta' => '#' . $r['booking_id'] . ($r['quoted_price'] !== null ? ' · ' . money($r['quoted_price']) : ''), 'button' => 'View', 'href' => '#'];
+            $items[] = ['title' => 'Payment due', 'meta' => '#' . $r['booking_id'] . ($r['quoted_price'] !== null ? ' · ' . money($r['quoted_price']) : ''), 'button' => 'Pay', 'href' => 'payments'];
         }
 
         $stmt = $this->db->prepare(
@@ -105,13 +105,12 @@ class Booking
         ]);
         return (int)$this->db->lastInsertId();
     }
-    // Bookings for the "My bookings" page. $filter is one of: all, quoted, active, completed
+    // Bookings for the "My bookings" page. $filter is one of: all, active, completed
     public function listForUser(int $userId, string $filter): array
     {
         $where = [
             'all'       => '',
-            'quoted'    => " AND b.status = 'quoted'",
-            'active'    => " AND b.status IN ('requested','accepted','assigned','in_progress')",
+            'active'    => " AND b.status IN ('requested','quoted','accepted','assigned','in_progress')",
             'completed' => " AND b.status = 'completed'",
         ][$filter] ?? '';
 
@@ -119,6 +118,7 @@ class Booking
             "SELECT b.booking_id, b.location_type, b.job_address, b.appointment_date, b.appointment_time, b.status,
                     v.make_model, v.plate_no, p.package_name,
                     q.quoted_price, q.condition_level, q.remarks,
+                    (SELECT pm.method FROM payments pm WHERE pm.booking_id = b.booking_id AND pm.payment_status = 'paid' ORDER BY pm.payment_id LIMIT 1) AS pay_method,
                     (SELECT COUNT(*) FROM photos ph WHERE ph.booking_id = b.booking_id) AS photo_count
              FROM bookings b
              JOIN vehicles v ON v.vehicle_id = b.vehicle_id
@@ -131,36 +131,7 @@ class Booking
         return $stmt->fetchAll();
     }
 
-    // Customer accepts the quotation: booking becomes "accepted"
-    public function accept(int $bookingId, int $userId): bool
-    {
-        try {
-            $this->db->beginTransaction();
-            $stmt = $this->db->prepare(
-                "UPDATE bookings
-                 SET status = IF(EXISTS (SELECT 1 FROM jobs j WHERE j.booking_id = bookings.booking_id), 'assigned', 'accepted')
-                 WHERE booking_id = :b AND user_id = :u AND status = 'quoted'"
-            );
-            $stmt->execute(['b' => $bookingId, 'u' => $userId]);
-            if ($stmt->rowCount() !== 1) {
-                $this->db->rollBack();
-                return false;
-            }
-            $stmt = $this->db->prepare("UPDATE quotations SET status = 'accepted' WHERE booking_id = :b");
-            $stmt->execute(['b' => $bookingId]);
-            $this->db->commit();
-            return true;
-        } catch (Throwable $ex) {
-            if ($this->db->inTransaction()) { $this->db->rollBack(); }
-            return false;
-        }
-    }
 
-    // Customer rejects the quotation: booking is cancelled
-    public function reject(int $bookingId, int $userId): bool
-    {
-        return $this->decide($bookingId, $userId, 'cancelled', 'rejected');
-    }
 
     // Cancel before the work has started
     public function cancel(int $bookingId, int $userId): bool
@@ -174,25 +145,4 @@ class Booking
         return $stmt->rowCount() === 1;
     }
 
-    private function decide(int $bookingId, int $userId, string $bookingStatus, string $quoteStatus): bool
-    {
-        try {
-            $this->db->beginTransaction();
-            $stmt = $this->db->prepare(
-                "UPDATE bookings SET status = :s WHERE booking_id = :b AND user_id = :u AND status = 'quoted'"
-            );
-            $stmt->execute(['s' => $bookingStatus, 'b' => $bookingId, 'u' => $userId]);
-            if ($stmt->rowCount() !== 1) {
-                $this->db->rollBack();
-                return false;
-            }
-            $stmt = $this->db->prepare('UPDATE quotations SET status = :s WHERE booking_id = :b');
-            $stmt->execute(['s' => $quoteStatus, 'b' => $bookingId]);
-            $this->db->commit();
-            return true;
-        } catch (Throwable $ex) {
-            if ($this->db->inTransaction()) { $this->db->rollBack(); }
-            return false;
-        }
-    }
 }

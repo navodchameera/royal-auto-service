@@ -154,7 +154,7 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
     <div class="row"><span class="m g1">Where</span><span id="sumWhere">–</span></div>
     <div class="row"><span class="m g1">Price range</span><b id="sumRange">–</b></div>
   </div>
-  <p class="m">The final price depends on the condition of your vehicle. We will send a quotation after we review your photos, and you accept it before anything is booked.</p>
+  <p class="m">The final price depends on the condition of your vehicle. We will review your photos, then confirm your booking with a price and a cleaner. If you do not want to go ahead, you can cancel it any time before the work starts.</p>
   <button class="btn" type="submit" id="submitBtn" style="width:100%">Submit for quotation</button>
 </aside>
 

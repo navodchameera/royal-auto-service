@@ -20,8 +20,8 @@ class Dashboard
         return [
             // customers waiting for a price
             'requests' => $one("SELECT COUNT(*) FROM bookings WHERE status = 'requested'"),
-            // quotations sent, waiting for the customer to accept or reject
-            'waiting' => $one("SELECT COUNT(*) FROM bookings WHERE status = 'quoted'"),
+            // confirmed bookings (quotation sent, cleaner assigned) that have not started
+            'upcoming' => $one("SELECT COUNT(*) FROM bookings WHERE status = 'assigned'"),
         ];
     }
 

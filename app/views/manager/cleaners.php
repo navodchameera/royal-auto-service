@@ -14,21 +14,37 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
 </div>
 
 <?php if (!empty($flash)): ?><div class="alert ok" role="status"><?= e($flash) ?></div><?php endif; ?>
-<?php if (!empty($errors['form'])): ?><div class="alert" role="alert"><?= e($errors['form']) ?></div><?php endif; ?>
+<?php if (!empty($errors['page'])): ?><div class="alert" role="alert"><?= e($errors['page']) ?></div><?php endif; ?>
 
 <section class="card">
   <?php if ($cleaners): ?>
     <div class="tblwrap">
       <table class="tbl">
-        <thead><tr><th>Cleaner</th><th>Contact</th><th>Address</th><th>Jobs</th><th>Status</th></tr></thead>
+        <thead><tr><th>Cleaner</th><th>Contact</th><th>Address</th><th>Jobs</th><th>Status</th><th></th></tr></thead>
         <tbody>
-        <?php foreach ($cleaners as $c): $blocked = $c['status'] === 'blocked'; ?>
+        <?php foreach ($cleaners as $c):
+            $blocked = $c['status'] === 'blocked';
+            $cid     = (int)$c['user_id'];
+            $name    = $c['full_name'];
+            $postUrl = BASE_URL . '/index.php?url=manage-cleaners';
+        ?>
           <tr>
             <td><b><?= e($c['full_name']) ?></b><span class="m">@<?= e($c['username']) ?></span></td>
             <td><?= e($c['email']) ?><br><span class="m"><?= e($c['phone']) ?></span></td>
             <td><?= e($c['address']) ?></td>
             <td><?= (int)$c['jobs_total'] ?></td>
-            <td><span class="pill<?= $blocked ? ' warn' : '' ?>"><?= $blocked ? 'Blocked' : 'Active' ?></span></td>
+            <td><span class="pill<?= $blocked ? ' warn' : '' ?>"><?= $blocked ? 'Banned' : 'Active' ?></span></td>
+            <td>
+              <?= Ui::rowMenu('menu_k' . $cid, 'More actions for ' . $name, [
+                  $blocked
+                    ? ['label' => 'Unban', 'url' => $postUrl, 'csrf' => $csrf, 'fields' => ['action' => 'unban', 'cleaner_id' => $cid],
+                       'title' => 'Unban ' . $name . '?', 'text' => $name . ' will be able to log in again and can be assigned to jobs.', 'ok' => 'Unban cleaner']
+                    : ['label' => 'Ban', 'url' => $postUrl, 'csrf' => $csrf, 'fields' => ['action' => 'ban', 'cleaner_id' => $cid],
+                       'title' => 'Ban ' . $name . '?', 'text' => $name . ' will be signed out, will not be able to log in, and will no longer be offered for new jobs.', 'ok' => 'Ban cleaner', 'tone' => 'danger'],
+                  ['label' => 'Delete', 'url' => $postUrl, 'csrf' => $csrf, 'fields' => ['action' => 'delete', 'cleaner_id' => $cid],
+                   'title' => 'Delete ' . $name . '?', 'text' => 'This permanently deletes ' . $name . ' from the database. Their completed jobs stay on record without a cleaner. This cannot be undone.', 'ok' => 'Delete cleaner', 'tone' => 'danger', 'red' => true],
+              ]) ?>
+            </td>
           </tr>
         <?php endforeach; ?>
         </tbody>
@@ -40,7 +56,7 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
 </section>
 
 <!-- Add a cleaner (pop-up) -->
-<dialog class="dlg" id="addCleanerDialog" aria-labelledby="addCleanerTitle"<?= $errors ? ' data-open' : '' ?>>
+<dialog class="dlg" id="addCleanerDialog" aria-labelledby="addCleanerTitle"<?= array_diff_key($errors, ['page' => 1]) ? ' data-open' : '' ?>>
   <div class="dh">
     <h2 id="addCleanerTitle">Add a cleaner</h2>
     <button class="x" type="button" data-close-dialog aria-label="Close">
@@ -50,6 +66,7 @@ $err = function ($key) use ($errors) { return e($errors[$key] ?? ''); };
   <form method="post" action="<?= BASE_URL ?>/index.php?url=manage-cleaners" data-validate data-mode="cleaner" novalidate>
     <div class="db">
       <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+      <?php if (!empty($errors['form'])): ?><div class="alert" role="alert"><?= e($errors['form']) ?></div><?php endif; ?>
 
       <div class="two">
         <div>
