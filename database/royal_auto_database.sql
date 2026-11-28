@@ -31,7 +31,8 @@ CREATE TABLE packages (
   package_name VARCHAR(50)  NOT NULL,
   description  VARCHAR(255) NULL,
   min_price    DECIMAL(10,2) NOT NULL,
-  max_price    DECIMAL(10,2) NOT NULL
+  max_price    DECIMAL(10,2) NOT NULL,
+  is_active    TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO packages (package_name, description, min_price, max_price) VALUES

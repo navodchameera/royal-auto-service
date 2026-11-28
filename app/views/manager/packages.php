@@ -57,21 +57,34 @@ require APP_PATH . '/views/layout/app_header.php';
   <?php if ($packages): ?>
     <div class="tblwrap">
       <table class="tbl">
-        <thead><tr><th>Package</th><th>Includes</th><th>Price range</th><th>Bookings</th><th></th></tr></thead>
+        <thead><tr><th>Package</th><th>Includes</th><th>Price range</th><th>Bookings</th><th>Status</th><th></th></tr></thead>
         <tbody>
-        <?php foreach ($packages as $p): ?>
+        <?php foreach ($packages as $p): $pid = (int)$p['package_id']; $active = (int)$p['is_active'] === 1; $name = $p['package_name']; ?>
           <tr>
-            <td><b><?= e($p['package_name']) ?></b></td>
+            <td><b><?= e($name) ?></b></td>
             <td><?= $p['description'] ? e($p['description']) : '<span class="m">–</span>' ?></td>
             <td><?= e(money($p['min_price'])) ?> – <?= e(number_format((float)$p['max_price'])) ?></td>
             <td><?= (int)$p['bookings'] ?></td>
-            <td><a class="btn g" href="<?= e($post) ?>&amp;edit=<?= (int)$p['package_id'] ?>">Edit</a></td>
+            <td><span class="pill<?= $active ? '' : ' warn' ?>"><?= $active ? 'Active' : 'Inactive' ?></span></td>
+            <td>
+              <?= Ui::rowMenu('menu_p' . $pid, 'More actions for ' . $name, [
+                  ['label' => 'Edit', 'href' => $post . '&edit=' . $pid],
+                  $active
+                    ? ['label' => 'Make inactive', 'url' => $post, 'csrf' => $csrf, 'fields' => ['action' => 'deactivate', 'package_id' => $pid],
+                       'title' => 'Make ' . $name . ' inactive?', 'text' => 'Customers will no longer see this package when they book. Existing bookings are not changed, and you can make it active again any time.', 'ok' => 'Make inactive']
+                    : ['label' => 'Make active', 'url' => $post, 'csrf' => $csrf, 'fields' => ['action' => 'activate', 'package_id' => $pid],
+                       'title' => 'Make ' . $name . ' active?', 'text' => 'Customers will be able to book this package again.', 'ok' => 'Make active'],
+                  ['label' => 'Delete', 'url' => $post, 'csrf' => $csrf, 'fields' => ['action' => 'delete', 'package_id' => $pid],
+                   'title' => 'Delete ' . $name . '?', 'text' => 'This permanently deletes the package. It only works for a package that has no bookings.',
+                   'ok' => 'Delete package', 'tone' => 'danger', 'red' => true],
+              ]) ?>
+            </td>
           </tr>
         <?php endforeach; ?>
         </tbody>
       </table>
     </div>
-    <p class="m" style="margin:14px 0 0">Packages cannot be deleted, because every booking that uses one would be deleted with it. Change the name or prices instead.</p>
+    <p class="m" style="margin:14px 0 0">A package that already has bookings cannot be deleted, because the bookings and payments would be deleted with it. Make it inactive instead: it is hidden from customers but your records stay.</p>
   <?php else: ?>
     <p class="empty">No packages yet.</p>
   <?php endif; ?>

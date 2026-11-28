@@ -229,7 +229,7 @@ a{color:#0A7C91}
 .kebab-btn:focus-visible{outline:3px solid #6FD0E0;outline-offset:2px}
 .menu-pop{position:fixed;z-index:80;min-width:190px;padding:6px;border-radius:16px;background:#0B1B2B;box-shadow:0 16px 48px rgba(11,27,43,.35)}
 .menu-pop form{margin:0}
-.menu-item{display:block;width:100%;min-height:44px;padding:0 14px;border:0;border-radius:10px;background:none;color:#fff;font:500 15px Inter,sans-serif;text-align:left;cursor:pointer}
+.menu-item{display:flex;align-items:center;text-decoration:none;width:100%;min-height:44px;padding:0 14px;border:0;border-radius:10px;background:none;color:#fff;font:500 15px Inter,sans-serif;text-align:left;cursor:pointer}
 .menu-item:hover,.menu-item:focus-visible{background:#16344D;outline:none}
 .menu-item.red{color:#FF8A80}
 .menu-sep{height:1px;margin:4px 8px;background:#1D3A52}
@@ -240,3 +240,24 @@ a{color:#0A7C91}
 .rejbox{border-top:1px solid #EEF3F6;margin-top:16px;padding-top:16px}
 .cdbox{margin:14px 0 0}
 .cdbig{font-size:30px;line-height:1.1;margin-top:2px;color:#6FD0E0}
+
+/* Reports */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpis .card{padding:18px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.kpis{grid-template-columns:1fr}}
+.ins{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.tbl th.num,.tbl td.num{text-align:right;white-space:nowrap}
+.bar{display:block;height:6px;border-radius:999px;background:#EAF1F5;margin-top:5px;min-width:80px}
+.bar i{display:block;height:100%;border-radius:999px;background:#0A7C91}
+.tbl td.num .bar{margin-left:auto}
+@media print{
+  .side,.scrim,.menu,.noprint,dialog{display:none!important}
+  body,.app{background:#fff!important}
+  .app{display:block;padding:0}
+  .main{padding:0}
+  .card{border:1px solid #D5E0E8;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .dk,.bar i,.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tblwrap{overflow:visible}
+  .tbl{min-width:0}
+}

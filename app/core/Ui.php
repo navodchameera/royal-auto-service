@@ -14,7 +14,7 @@ class Ui
 
     // A "three dots" button that opens a small menu. Each item is a POST form with its own confirmation.
     // Item keys: label, url, csrf, fields[], title, text, ok, tone ('danger' = red confirm button),
-    //            red (true = red menu text)
+    //            red (true = red menu text). An item with 'href' and 'label' is a plain link.
     public static function rowMenu(string $id, string $label, array $items): string
     {
         $h = '<div class="kebab">'
@@ -26,6 +26,10 @@ class Ui
 
         foreach ($items as $i => $it) {
             if (!empty($it['red']) && $i > 0) { $h .= '<div class="menu-sep" role="separator"></div>'; }
+            if (isset($it['href'])) {       // a plain link item (no form)
+                $h .= '<a href="' . e($it['href']) . '" role="menuitem" class="menu-item">' . e($it['label']) . '</a>';
+                continue;
+            }
             $h .= '<form method="post" action="' . e($it['url']) . '" role="none"'
                 . self::confirm($it['title'], $it['text'], $it['ok'], $it['tone'] ?? '') . '>'
                 . '<input type="hidden" name="csrf" value="' . e($it['csrf']) . '">';

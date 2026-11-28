@@ -6,8 +6,8 @@ session_start();
 define('APP_PATH', __DIR__ . '/app');
 require APP_PATH . '/config/config.php';
 
-foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'core/Ui', 'core/SimplePdf', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Payment', 'models/Jobs', 'models/MyBookings', 'models/ManageMore', 'models/Bill', 'models/Package', 'models/Photo',
-          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController', 'controllers/ManageCleanersController', 'controllers/PaymentController', 'controllers/CleanerJobsController', 'controllers/MyBookingsController', 'controllers/ManageJobsController', 'controllers/ManagePaymentsController', 'controllers/ManageReviewsController', 'controllers/ManagePackagesController', 'controllers/BillController'] as $file) {
+foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'core/Ui', 'core/SimplePdf', 'core/ReportExport', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Payment', 'models/Jobs', 'models/MyBookings', 'models/ManageMore', 'models/Bill', 'models/Reports', 'models/Package', 'models/Photo',
+          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController', 'controllers/ManageCleanersController', 'controllers/PaymentController', 'controllers/CleanerJobsController', 'controllers/MyBookingsController', 'controllers/ManageJobsController', 'controllers/ManagePaymentsController', 'controllers/ManageReviewsController', 'controllers/ManagePackagesController', 'controllers/BillController', 'controllers/ManageReportsController'] as $file) {
     require APP_PATH . '/' . $file . '.php';
 }
 
@@ -44,6 +44,7 @@ $routes = [
     'manage-payments'   => ['ManagePaymentsController', 'index'],
     'manage-reviews'    => ['ManageReviewsController', 'index'],
     'manage-packages'   => ['ManagePackagesController', 'index'],
+    'manage-reports'    => ['ManageReportsController', 'index'],
     'bill'              => ['BillController', 'show'],
     'my-jobs'           => ['CleanerJobsController', 'index'],
     'payments'          => ['PaymentController', 'index'],

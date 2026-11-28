@@ -113,11 +113,67 @@ class ManageMore
     // ------------------------------------------------------------ packages
     public function packages(): array
     {
-        return $this->db->query(
-            "SELECT p.package_id, p.package_name, p.description, p.min_price, p.max_price,
-                    (SELECT COUNT(*) FROM bookings b WHERE b.package_id = p.package_id) AS bookings
-             FROM packages p ORDER BY p.package_id"
-        )->fetchAll();
+        try {
+            return $this->db->query(
+                "SELECT p.package_id, p.package_name, p.description, p.min_price, p.max_price, p.is_active,
+                        (SELECT COUNT(*) FROM bookings b WHERE b.package_id = p.package_id) AS bookings
+                 FROM packages p ORDER BY p.package_id"
+            )->fetchAll();
+        } catch (PDOException $ex) {
+            return $this->db->query(
+                "SELECT p.package_id, p.package_name, p.description, p.min_price, p.max_price, 1 AS is_active,
+                        (SELECT COUNT(*) FROM bookings b WHERE b.package_id = p.package_id) AS bookings
+                 FROM packages p ORDER BY p.package_id"
+            )->fetchAll();
+        }
+    }
+
+    // Makes a package active or inactive. Returns '' or a message.
+    public function setPackageActive(int $id, bool $active): string
+    {
+        try {
+            if (!$active) {
+                $stmt = $this->db->prepare('SELECT COUNT(*) FROM packages WHERE is_active = 1 AND package_id <> :id');
+                $stmt->execute(['id' => $id]);
+                if ((int)$stmt->fetchColumn() === 0) {
+                    return 'At least one package must stay active, so customers can still book.';
+                }
+            }
+            $stmt = $this->db->prepare('UPDATE packages SET is_active = :a WHERE package_id = :id');
+            $stmt->execute(['a' => $active ? 1 : 0, 'id' => $id]);
+            return '';
+        } catch (PDOException $ex) {
+            return 'The database needs one update first. Run database/packages_active_update.sql in phpMyAdmin.';
+        }
+    }
+
+    // Deletes a package nobody has booked. A package with bookings cannot be deleted, because the
+    // database would delete those bookings (and their payments) with it. Make it inactive instead.
+    public function deletePackage(int $id): string
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM bookings WHERE package_id = :id');
+        $stmt->execute(['id' => $id]);
+        if ((int)$stmt->fetchColumn() > 0) {
+            return 'This package has bookings, so deleting it would also delete those bookings and their payments. Make it inactive instead.';
+        }
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM packages WHERE package_id <> :id' . $this->activeClause());
+        $stmt->execute(['id' => $id]);
+        if ((int)$stmt->fetchColumn() === 0) {
+            return 'You cannot delete the last package.';
+        }
+        $stmt = $this->db->prepare('DELETE FROM packages WHERE package_id = :id');
+        $stmt->execute(['id' => $id]);
+        return $stmt->rowCount() === 1 ? '' : 'Package not found.';
+    }
+
+    private function activeClause(): string
+    {
+        try {
+            $this->db->query('SELECT is_active FROM packages LIMIT 1');
+            return ' AND is_active = 1';
+        } catch (PDOException $ex) {
+            return '';
+        }
     }
 
     public function nameTaken(string $name, int $exceptId): bool

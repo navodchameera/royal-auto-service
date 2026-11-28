@@ -23,6 +23,7 @@ $navByRole = [
         'packages'   => ['Packages',   BASE_URL . '/index.php?url=manage-packages'],
         'payments'   => ['Payments',   BASE_URL . '/index.php?url=manage-payments'],
         'reviews'    => ['Reviews',    BASE_URL . '/index.php?url=manage-reviews'],
+        'reports'    => ['Reports',    BASE_URL . '/index.php?url=manage-reports'],
         'settings'   => $settings,
     ],
     'cleaner' => [
@@ -49,6 +50,7 @@ $icons = [
     'jobs'     => '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 14l2 2 4-4"/>',
     'cleaners' => '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.5a3 3 0 0 1 0 5.5M18 14.5c1.7.8 3 2.5 3 5.5"/>',
     'customers' => '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>',
+    'reports'  => '<path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3M20 16V6"/>',
     'packages' => '<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
 ];
 $svg = function (string $key, string $class = '') use ($icons) {

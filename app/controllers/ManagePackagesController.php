@@ -2,7 +2,7 @@
 defined('APP_PATH') or exit;
 
 // Manager: the service packages and their price ranges.
-// Packages cannot be deleted, because deleting one would also delete every booking that uses it.
+// A package with bookings cannot be deleted (it would delete those bookings). Make it inactive instead.
 class ManagePackagesController extends Controller
 {
     public function index(): void
@@ -14,7 +14,23 @@ class ManagePackagesController extends Controller
         $errors = [];
         $old    = ['name' => '', 'description' => '', 'min' => '', 'max' => ''];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $flash = $_SESSION['flash'] ?? '';
+        unset($_SESSION['flash']);
+
+        $action = (string)($_POST['action'] ?? '');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($action, ['activate', 'deactivate', 'delete'], true)) {
+            $pid = (int)($_POST['package_id'] ?? 0);
+            if (!$this->csrfValid()) {
+                $errors['form'] = 'Your session expired. Please try again.';
+            } else {
+                $result = $action === 'delete' ? $m->deletePackage($pid) : $m->setPackageActive($pid, $action === 'activate');
+                if ($result === '') {
+                    $_SESSION['flash'] = ['activate' => 'Package is active again.', 'deactivate' => 'Package is inactive. Customers can no longer book it.', 'delete' => 'Package deleted.'][$action];
+                    $this->redirect('manage-packages');
+                }
+                $errors['form'] = $result;
+            }
+        } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $editId = (int)($_POST['package_id'] ?? 0);
             $old = [
                 'name'        => trim((string)($_POST['package_name'] ?? '')),
@@ -57,9 +73,6 @@ class ManagePackagesController extends Controller
                 }
             }
         }
-
-        $flash = $_SESSION['flash'] ?? '';
-        unset($_SESSION['flash']);
 
         $this->view('manager/packages', [
             'user' => $user, 'packages' => $m->packages(), 'editId' => $editId, 'old' => $old,
