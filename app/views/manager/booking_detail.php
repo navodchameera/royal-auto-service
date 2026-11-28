@@ -4,15 +4,19 @@ $title     = 'Booking #' . (int)$b['booking_id'];
 $navActive = 'bookings';
 $base      = BASE_URL . '/index.php?url=';
 $id        = (int)$b['booking_id'];
+$post      = $base . 'manage-bookings&id=' . $id;
 $canCancel = in_array($b['status'], ['requested', 'quoted', 'accepted', 'assigned'], true);
+$rejected  = $b['status'] === 'cancelled' && $b['q_status'] === 'rejected';
+$canReject = $b['status'] === 'requested';
 $canQuote  = in_array($b['status'], ['requested', 'assigned'], true);
+$canPay    = in_array($b['status'], ['assigned', 'in_progress', 'completed'], true) && $b['quoted_price'] !== null && !$b['pay_method'];
 require APP_PATH . '/views/layout/app_header.php';
 ?>
 <div class="top">
   <div>
     <a class="back" href="<?= e($base) ?>manage-bookings">← All bookings</a>
     <h1>Booking #<?= $id ?></h1>
-    <div class="sub"><span class="pill<?= $b['status'] === 'requested' ? ' ink' : '' ?>"><?= e(status_label($b['status'])) ?></span></div>
+    <div class="sub"><span class="pill<?= $b['status'] === 'requested' ? ' ink' : '' ?><?= $rejected ? ' warn' : '' ?>"><?= e(booking_state($b['status'], $b['q_status'])) ?></span></div>
   </div>
 </div>
 
@@ -57,6 +61,20 @@ require APP_PATH . '/views/layout/app_header.php';
 
   <div class="g2">
     <section class="card">
+      <h2>Progress</h2>
+      <div class="lst kv">
+        <div class="row"><span class="m g1">Booked</span><b><?= e(when_label($b['created_at'])) ?></b></div>
+        <div class="row"><span class="m g1"><?= $rejected ? 'Rejected' : 'Quotation sent' ?></span><b><?= e(when_label($b['quotation_date'])) ?></b></div>
+        <div class="row"><span class="m g1">Job started</span><b><?= e(when_label($b['arrived_at'])) ?></b></div>
+        <div class="row"><span class="m g1">Paid</span><b><?= e(when_label($b['pay_date'])) ?></b></div>
+        <div class="row"><span class="m g1">Job completed</span><b><?= e(when_label($b['completed_at'])) ?></b></div>
+      </div>
+      <?php if ($b['status'] === 'finished'): ?>
+        <div class="acts" style="margin-top:12px"><a class="btn g" href="<?= e($base) ?>bill&amp;id=<?= $id ?>">View bill</a></div>
+      <?php endif; ?>
+    </section>
+
+    <section class="card">
       <h2>Photos</h2>
       <?php if ($photos): ?>
         <div class="photos">
@@ -79,21 +97,22 @@ require APP_PATH . '/views/layout/app_header.php';
         <p class="m" style="margin:0"><?= e(date('j M Y, H:i', strtotime($b['pay_date']))) ?></p>
       <?php elseif ($b['quoted_price'] === null): ?>
         <p class="empty">Nothing to pay until a quotation is sent.</p>
-      <?php elseif ($b['status'] === 'completed'): ?>
-        <p class="m" style="margin-top:0">The job is complete and unpaid. If the customer paid in cash, mark it as paid.</p>
-        <form method="post" action="<?= e($base) ?>manage-bookings&amp;id=<?= $id ?>"<?= Ui::confirm('Mark booking #' . $id . ' as paid?', 'Confirm that the customer paid ' . money($b['quoted_price']) . ' in cash. This is recorded as a cash payment.', 'Mark as paid') ?>> as paid in cash (<?= e(money($b['quoted_price'])) ?>)?">
-          <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
-          <input type="hidden" name="action" value="pay">
-          <button class="btn" type="submit">Mark as paid (cash)</button>
-        </form>
+      <?php elseif ($canPay): ?>
+        <p class="m" style="margin-top:0">Unpaid. The customer can pay online, or the cleaner can take cash. If the customer paid you in cash, mark it as paid here.</p>
+        <?= Ui::postButton($post, $csrf, ['action' => 'pay'], 'Mark as paid (cash)', '',
+              ['Mark booking #' . $id . ' as paid?', 'Confirm that the customer paid ' . money($b['quoted_price']) . ' in cash. This is recorded as a cash payment.', 'Mark as paid']) ?>
       <?php else: ?>
-        <p class="empty">Unpaid. The customer can pay online now, or in cash after the service.</p>
+        <p class="empty">Unpaid.</p>
       <?php endif; ?>
     </section>
 
     <section class="card">
       <h2>Quotation</h2>
-      <?php if ($b['quoted_price'] !== null): ?>
+      <?php if ($rejected): ?>
+        <p style="margin:0 0 8px"><span class="pill warn">Rejected</span></p>
+        <p class="m" style="margin:0 0 4px">Reason shown to the customer:</p>
+        <p style="margin:0"><?= nl2br(e($b['remarks'])) ?></p>
+      <?php elseif ($b['quoted_price'] !== null): ?>
         <div class="qprice"><?= e(money($b['quoted_price'])) ?></div>
         <p style="margin:0 0 8px">
           <?php if ($b['condition_level']): ?><span class="pill">Condition: <?= e(ucfirst($b['condition_level'])) ?></span><?php endif; ?>
@@ -108,13 +127,20 @@ require APP_PATH . '/views/layout/app_header.php';
           <a class="btn" href="<?= e($base) ?>manage-quotations&amp;id=<?= $id ?>&amp;filter=<?= $b['status'] === 'assigned' ? 'sent' : 'requested' ?>"><?= $b['quoted_price'] !== null ? 'Update quotation' : 'Create quotation' ?></a>
         <?php endif; ?>
         <?php if ($canCancel): ?>
-          <form method="post" action="<?= e($base) ?>manage-bookings&amp;id=<?= $id ?>"<?= Ui::confirm('Cancel booking #' . $id . '?', 'The customer will see this booking as cancelled and the cleaner will be free again for that time.', 'Cancel booking', 'danger', 'Keep booking') ?>>? The customer will see it as cancelled.">
-            <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
-            <input type="hidden" name="action" value="cancel">
-            <button class="btn danger" type="submit">Cancel booking</button>
-          </form>
+          <?= Ui::postButton($post, $csrf, ['action' => 'cancel'], 'Cancel booking', 'danger',
+                ['Cancel booking #' . $id . '?', 'The customer will see this booking as cancelled and the cleaner will be free again for that time.', 'Cancel booking']) ?>
         <?php endif; ?>
       </div>
+
+      <?php if ($canReject): ?>
+        <form class="rejbox" method="post" action="<?= e($post) ?>"<?= Ui::confirm('Reject booking #' . $id . '?', 'The booking will be closed and the customer will see your reason. This cannot be undone.', 'Reject booking', 'danger') ?>>
+          <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+          <input type="hidden" name="action" value="reject">
+          <label for="reason">Reject this booking</label>
+          <textarea class="in" id="reason" name="reason" rows="3" minlength="5" maxlength="500" required placeholder="Reason for rejecting (the customer will see this)"><?= e($rejectOld) ?></textarea>
+          <button class="btn danger" type="submit">Reject booking</button>
+        </form>
+      <?php endif; ?>
     </section>
   </div>
 </div>

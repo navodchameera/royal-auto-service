@@ -17,15 +17,19 @@ $navByRole = [
         'home'       => ['Dashboard',  BASE_URL . '/index.php?url=home'],
         'bookings'   => ['Bookings',   BASE_URL . '/index.php?url=manage-bookings'],
         'quotations' => ['Quotations', BASE_URL . '/index.php?url=manage-quotations'],
-        'jobs'       => ['Jobs',       '#'],
+        'jobs'       => ['Jobs',       BASE_URL . '/index.php?url=manage-jobs'],
         'cleaners'   => ['Cleaners',   BASE_URL . '/index.php?url=manage-cleaners'],
         'customers'  => ['Customers',  BASE_URL . '/index.php?url=manage-customers'],
-        'packages'   => ['Packages',   '#'],
-        'payments'   => ['Payments',   '#'],
-        'reviews'    => ['Reviews',    '#'],
+        'packages'   => ['Packages',   BASE_URL . '/index.php?url=manage-packages'],
+        'payments'   => ['Payments',   BASE_URL . '/index.php?url=manage-payments'],
+        'reviews'    => ['Reviews',    BASE_URL . '/index.php?url=manage-reviews'],
         'settings'   => $settings,
     ],
-    'cleaner' => ['home' => ['My jobs', BASE_URL . '/index.php?url=home'], 'settings' => $settings],
+    'cleaner' => [
+        'home'     => ['Dashboard', BASE_URL . '/index.php?url=home'],
+        'jobs'     => ['My jobs',   BASE_URL . '/index.php?url=my-jobs'],
+        'settings' => $settings,
+    ],
 ];
 $navItems = $navByRole[$user['role']] ?? $navByRole['customer'];
 

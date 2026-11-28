@@ -84,7 +84,7 @@ $tiles = [
       <?php else: ?>
         <p class="empty">No reviews yet.</p>
       <?php endif; ?>
-      <a class="btn g" href="#" style="margin-top:14px">View all reviews</a>
+      <a class="btn g" href="<?= BASE_URL ?>/index.php?url=manage-reviews" style="margin-top:14px">View all reviews</a>
     </section>
   </div>
 </div>

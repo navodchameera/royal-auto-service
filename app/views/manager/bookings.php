@@ -39,8 +39,12 @@ require APP_PATH . '/views/layout/app_header.php';
             <td><?= e($b['make_model']) ?><br><span class="m"><?= e($b['plate_no']) ?></span></td>
             <td><?= e($b['package_name']) ?><br><span class="m"><?= e(location_label($b['location_type'])) ?></span></td>
             <td><?= e(date('j M Y', strtotime($b['appointment_date']))) ?><br><span class="m"><?= e(substr($b['appointment_time'], 0, 5)) ?></span></td>
-            <td><span class="pill<?= $b['status'] === 'requested' ? ' ink' : '' ?>"><?= e(status_label($b['status'])) ?></span></td>
-            <td><?php if ($b['pay_method']): ?><span class="pill">Paid · <?= e(method_label($b['pay_method'])) ?></span><?php elseif ($b['status'] === 'completed'): ?><span class="pill ink">Unpaid</span><?php else: ?><span class="m">–</span><?php endif; ?></td>
+            <td><span class="pill<?= $b['status'] === 'requested' ? ' ink' : '' ?>"><?= e(booking_state($b['status'], $b['q_status'])) ?></span></td>
+            <td>
+              <?php if ($b['pay_method']): ?><span class="pill">Paid · <?= e(method_label($b['pay_method'])) ?></span>
+              <?php elseif (in_array($b['status'], ['assigned', 'in_progress', 'completed'], true)): ?><span class="pill ink">Unpaid</span>
+              <?php else: ?><span class="m">–</span><?php endif; ?>
+            </td>
             <td>
               <?php if ($b['status'] === 'requested'): ?>
                 <a class="btn" href="<?= e($base) ?>manage-quotations&amp;id=<?= $id ?>">Quote</a>

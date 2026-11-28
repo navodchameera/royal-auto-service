@@ -4,8 +4,8 @@ defined('APP_PATH') or exit;
 class ManageBookingsController extends Controller
 {
     public const STATUSES = [
-        'all' => 'All', 'requested' => 'Requested', 'assigned' => 'Cleaner assigned',
-        'in_progress' => 'In progress', 'completed' => 'Completed', 'cancelled' => 'Cancelled',
+        'all' => 'All', 'active' => 'Active', 'requested' => 'Requested', 'assigned' => 'Cleaner assigned',
+        'in_progress' => 'In progress', 'completed' => 'Job done', 'finished' => 'Completed', 'rejected' => 'Rejected', 'cancelled' => 'Cancelled',
     ];
 
     public function index(): void
@@ -41,17 +41,34 @@ class ManageBookingsController extends Controller
         }
 
         $error = '';
+        $rejectOld = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $action = (string)($_POST['action'] ?? '');
+
             if (!$this->csrfValid()) {
                 $error = 'Your session expired. Please try again.';
-            } elseif (($_POST['action'] ?? '') === 'pay') {
-                $result = (new Payment())->record($id, 'cash', ['completed']);
+            } elseif ($action === 'pay') {
+                // The customer paid the cleaner or the manager in cash
+                $result = (new Payment())->record($id, 'cash', ['assigned', 'in_progress', 'completed']);
                 if ($result === '') {
                     $_SESSION['flash'] = 'Booking #' . $id . ' was marked as paid (cash).';
                     $this->redirect('manage-bookings&id=' . $id);
                 }
                 $error = $result;
-            } elseif (($_POST['action'] ?? '') === 'cancel' && $m->cancelBooking($id)) {
+            } elseif ($action === 'reject') {
+                $reason = trim((string)($_POST['reason'] ?? ''));
+                if (mb_strlen($reason) < 5 || mb_strlen($reason) > 500) {
+                    $error = 'Write the reason for rejecting this booking (5 to 500 characters). The customer will see it.';
+                } else {
+                    $result = $m->rejectBooking($id, $reason);
+                    if ($result === '') {
+                        $_SESSION['flash'] = 'Booking #' . $id . ' was rejected. The customer can see your reason.';
+                        $this->redirect('manage-bookings&id=' . $id);
+                    }
+                    $error = $result;
+                }
+                $rejectOld = $reason;
+            } elseif ($action === 'cancel' && $m->cancelBooking($id)) {
                 $_SESSION['flash'] = 'Booking #' . $id . ' was cancelled.';
                 $this->redirect('manage-bookings&id=' . $id);
             } else {
@@ -63,9 +80,9 @@ class ManageBookingsController extends Controller
         unset($_SESSION['flash']);
 
         $this->view('manager/booking_detail', [
-            'user' => $user, 'b' => $booking, 'photos' => $m->photos($id),
+            'user' => $user, 'b' => $m->booking($id), 'photos' => $m->photos($id),
             'slots' => BookingController::SLOTS, 'error' => $error, 'flash' => $flash,
-            'csrf' => $this->csrfToken(),
+            'csrf' => $this->csrfToken(), 'rejectOld' => $rejectOld,
         ]);
     }
 }

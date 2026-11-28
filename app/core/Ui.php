@@ -37,4 +37,16 @@ class Ui
         }
         return $h . '</div></div>';
     }
+
+    // A small POST form with one button. $confirm = [title, text, okLabel] (optional)
+    public static function postButton(string $url, string $csrf, array $fields, string $label, string $class = '', array $confirm = []): string
+    {
+        $h = '<form method="post" action="' . e($url) . '"'
+           . ($confirm ? self::confirm($confirm[0], $confirm[1], $confirm[2]) : '') . '>'
+           . '<input type="hidden" name="csrf" value="' . e($csrf) . '">';
+        foreach ($fields as $name => $value) {
+            $h .= '<input type="hidden" name="' . e($name) . '" value="' . e($value) . '">';
+        }
+        return $h . '<button class="btn ' . e($class) . '" type="submit">' . e($label) . '</button></form>';
+    }
 }

@@ -15,7 +15,7 @@ class Manage
     public function bookings(string $status, string $q): array
     {
         $sql = "SELECT b.booking_id, b.location_type, b.appointment_date, b.appointment_time, b.status,
-                       u.full_name, v.make_model, v.plate_no, p.package_name, qt.quoted_price,
+                       u.full_name, v.make_model, v.plate_no, p.package_name, qt.quoted_price, qt.status AS q_status,
                        (SELECT pm.method FROM payments pm WHERE pm.booking_id = b.booking_id AND pm.payment_status = 'paid' ORDER BY pm.payment_id LIMIT 1) AS pay_method
                 FROM bookings b
                 JOIN users u ON u.user_id = b.user_id
@@ -24,7 +24,13 @@ class Manage
                 LEFT JOIN quotations qt ON qt.booking_id = b.booking_id
                 WHERE 1 = 1";
         $params = [];
-        if ($status !== 'all') {
+        if ($status === 'active') {
+            $sql .= " AND b.status IN ('requested','quoted','accepted','assigned','in_progress','completed')";
+        } elseif ($status === 'rejected') {
+            $sql .= " AND b.status = 'cancelled' AND qt.status = 'rejected'";
+        } elseif ($status === 'cancelled') {
+            $sql .= " AND b.status = 'cancelled' AND (qt.status IS NULL OR qt.status <> 'rejected')";
+        } elseif ($status !== 'all') {
             $sql .= " AND b.status = :s";
             $params['s'] = $status;
         }
@@ -47,8 +53,8 @@ class Manage
                     u.user_id AS cust_id, u.full_name, u.email, u.phone, u.address AS cust_address,
                     v.make_model, v.plate_no, v.colour, v.vehicle_type,
                     p.package_name, p.min_price, p.max_price,
-                    qt.quoted_price, qt.condition_level, qt.remarks, qt.status AS q_status,
-                    cu.full_name AS cleaner_name, j.cleaner_id,
+                    qt.quoted_price, qt.condition_level, qt.remarks, qt.status AS q_status, qt.quotation_date,
+                    cu.full_name AS cleaner_name, j.cleaner_id, j.arrived_at, j.completed_at,
                     (SELECT pm.method FROM payments pm WHERE pm.booking_id = b.booking_id AND pm.payment_status = 'paid' ORDER BY pm.payment_id LIMIT 1) AS pay_method,
                     (SELECT pm.payment_date FROM payments pm WHERE pm.booking_id = b.booking_id AND pm.payment_status = 'paid' ORDER BY pm.payment_id LIMIT 1) AS pay_date
              FROM bookings b
@@ -80,6 +86,39 @@ class Manage
         );
         $stmt->execute(['id' => $id]);
         return $stmt->rowCount() === 1;
+    }
+
+    // Rejects a booking that is still waiting for a quotation. The reason is kept in the quotation
+    // remarks (quotation status "rejected", price 0) and the booking is closed as cancelled.
+    // Returns '' on success or a message.
+    public function rejectBooking(int $id, string $reason): string
+    {
+        try {
+            $this->db->beginTransaction();
+
+            $stmt = $this->db->prepare('SELECT status FROM bookings WHERE booking_id = :b FOR UPDATE');
+            $stmt->execute(['b' => $id]);
+            if ($stmt->fetchColumn() !== 'requested') {
+                $this->db->rollBack();
+                return 'Only a booking that is waiting for a quotation can be rejected.';
+            }
+
+            $stmt = $this->db->prepare(
+                "INSERT INTO quotations (booking_id, quoted_price, condition_level, remarks, status, quotation_date)
+                 VALUES (:b, 0, NULL, :r, 'rejected', NOW())
+                 ON DUPLICATE KEY UPDATE quoted_price = 0, condition_level = NULL, remarks = :r2, status = 'rejected', quotation_date = NOW()"
+            );
+            $stmt->execute(['b' => $id, 'r' => $reason, 'r2' => $reason]);
+
+            $stmt = $this->db->prepare("UPDATE bookings SET status = 'cancelled' WHERE booking_id = :b");
+            $stmt->execute(['b' => $id]);
+
+            $this->db->commit();
+            return '';
+        } catch (Throwable $ex) {
+            if ($this->db->inTransaction()) { $this->db->rollBack(); }
+            return 'The booking could not be rejected. Please try again.';
+        }
     }
 
     // ---------------------------------------------------------- quotations

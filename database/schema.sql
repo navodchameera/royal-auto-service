@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   job_address      VARCHAR(255) NULL,
   appointment_date DATE NOT NULL,
   appointment_time TIME NOT NULL,
-  status           ENUM('requested','quoted','accepted','assigned','in_progress','completed','cancelled') NOT NULL DEFAULT 'requested',
+  status           ENUM('requested','quoted','accepted','assigned','in_progress','completed','finished','cancelled') NOT NULL DEFAULT 'requested',
   created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id)    REFERENCES users(user_id),
   FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),

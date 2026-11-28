@@ -22,7 +22,7 @@ class HomeController extends Controller
         }
 
         if ($user['role'] === 'cleaner') {
-            (new CleanerJobsController())->index();
+            (new CleanerJobsController())->dashboard();
             return;
         }
 
@@ -42,7 +42,7 @@ class HomeController extends Controller
             'flash'     => $flash,
             'user'      => $user,
             'next'      => $bookings->nextAppointment($id),
-            'attention' => $bookings->attention($id),
+            'attention' => (new MyBookings())->attention($id),
             'vehicles'  => $vehicles->forUser($id),
             'recent'    => $bookings->recent($id, 5),
         ]);

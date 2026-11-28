@@ -20,6 +20,12 @@ require APP_PATH . '/views/layout/app_header.php';
     <span class="pill">Next appointment</span>
     <div class="when"><?= e(date('D j M, H:i', strtotime($next['appointment_date'] . ' ' . $next['appointment_time']))) ?></div>
     <div class="m big-m"><?= e($next['make_model']) ?> · <?= e($next['plate_no']) ?></div>
+    <?php if ($next['status'] !== 'in_progress'): ?>
+    <div class="cdbox" aria-live="off">
+      <span class="m">Starts in</span>
+      <div class="cd cdbig" data-countdown="<?= e(date('c', strtotime($next['appointment_date'] . ' ' . $next['appointment_time']))) ?>"></div>
+    </div>
+    <?php endif; ?>
     <div class="tags">
       <span class="pill"><?= e($next['package_name']) ?></span>
       <span class="pill"><?= e(location_label($next['location_type'])) ?></span>
@@ -91,4 +97,5 @@ require APP_PATH . '/views/layout/app_header.php';
     <?php endif; ?>
   </section>
 </div>
+<script src="<?= BASE_URL ?>/assets/js/countdown.js" defer></script>
 <?php require APP_PATH . '/views/layout/app_footer.php'; ?>

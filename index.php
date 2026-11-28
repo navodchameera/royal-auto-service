@@ -6,8 +6,8 @@ session_start();
 define('APP_PATH', __DIR__ . '/app');
 require APP_PATH . '/config/config.php';
 
-foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'core/Ui', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Payment', 'models/Jobs', 'models/Package', 'models/Photo',
-          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController', 'controllers/ManageCleanersController', 'controllers/PaymentController', 'controllers/CleanerJobsController'] as $file) {
+foreach (['core/Database', 'core/Controller', 'core/PhotoUploader', 'core/Ui', 'core/SimplePdf', 'models/User', 'models/Vehicle', 'models/Booking', 'models/Dashboard', 'models/Manage', 'models/Payment', 'models/Jobs', 'models/MyBookings', 'models/ManageMore', 'models/Bill', 'models/Package', 'models/Photo',
+          'controllers/AuthController', 'controllers/HomeController', 'controllers/AccountController', 'controllers/BookingController', 'controllers/VehicleController', 'controllers/ManageBookingsController', 'controllers/ManageQuotationsController', 'controllers/ManageCustomersController', 'controllers/ManageCleanersController', 'controllers/PaymentController', 'controllers/CleanerJobsController', 'controllers/MyBookingsController', 'controllers/ManageJobsController', 'controllers/ManagePaymentsController', 'controllers/ManageReviewsController', 'controllers/ManagePackagesController', 'controllers/BillController'] as $file) {
     require APP_PATH . '/' . $file . '.php';
 }
 
@@ -34,12 +34,18 @@ $routes = [
     'home'     => ['HomeController', 'index'],
     'settings' => ['AccountController', 'settings'],
     'book'     => ['BookingController', 'create'],
-    'bookings' => ['BookingController', 'index'],
+    'bookings' => ['MyBookingsController', 'index'],
     'vehicles' => ['VehicleController', 'index'],
     'manage-bookings'   => ['ManageBookingsController', 'index'],
     'manage-quotations' => ['ManageQuotationsController', 'index'],
     'manage-customers'  => ['ManageCustomersController', 'index'],
     'manage-cleaners'   => ['ManageCleanersController', 'index'],
+    'manage-jobs'       => ['ManageJobsController', 'index'],
+    'manage-payments'   => ['ManagePaymentsController', 'index'],
+    'manage-reviews'    => ['ManageReviewsController', 'index'],
+    'manage-packages'   => ['ManagePackagesController', 'index'],
+    'bill'              => ['BillController', 'show'],
+    'my-jobs'           => ['CleanerJobsController', 'index'],
     'payments'          => ['PaymentController', 'index'],
     'pay'               => ['PaymentController', 'pay'],
 ];

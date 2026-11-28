@@ -36,7 +36,7 @@ class Dashboard
              LEFT JOIN jobs j ON j.booking_id = b.booking_id
              LEFT JOIN users cu ON cu.user_id = j.cleaner_id
              WHERE b.appointment_date = CURDATE()
-               AND b.status IN ('accepted','assigned','in_progress','completed')
+               AND b.status IN ('accepted','assigned','in_progress','completed','finished')
              ORDER BY b.appointment_time"
         )->fetchAll();
     }

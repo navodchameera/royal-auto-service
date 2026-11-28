@@ -33,10 +33,21 @@ function status_label(string $status): string {
         'accepted'    => 'Accepted',
         'assigned'    => 'Cleaner assigned',
         'in_progress' => 'In progress',
-        'completed'   => 'Completed',
+        'completed'   => 'Job done',
+        'finished'    => 'Completed',
         'cancelled'   => 'Cancelled',
     ];
     return $labels[$status] ?? ucfirst($status);
+}
+
+// Status text that also knows about rejected bookings (a rejected booking is stored as cancelled
+// with a quotation row whose status is "rejected" and whose remarks hold the reason)
+function booking_state(string $status, ?string $quoteStatus): string {
+    return ($status === 'cancelled' && $quoteStatus === 'rejected') ? 'Rejected' : status_label($status);
+}
+
+function when_label(?string $dt): string {
+    return $dt ? date('D j M Y, H:i', strtotime($dt)) : '–';
 }
 
 function method_label(string $method): string {

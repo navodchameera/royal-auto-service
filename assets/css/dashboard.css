@@ -233,3 +233,10 @@ a{color:#0A7C91}
 .menu-item:hover,.menu-item:focus-visible{background:#16344D;outline:none}
 .menu-item.red{color:#FF8A80}
 .menu-sep{height:1px;margin:4px 8px;background:#1D3A52}
+
+/* Shared small bits */
+.big.sm{font-size:30px;margin:6px 0 0}
+.cd{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:-.02em}
+.rejbox{border-top:1px solid #EEF3F6;margin-top:16px;padding-top:16px}
+.cdbox{margin:14px 0 0}
+.cdbig{font-size:30px;line-height:1.1;margin-top:2px;color:#6FD0E0}
